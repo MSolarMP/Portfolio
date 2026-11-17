@@ -1,6 +1,7 @@
 /**
- * Keepers (admins) are defined by the ADMIN_EMAILS environment variable,
+ * The Keeper (site owner) is defined by the ADMIN_EMAILS environment variable,
  * a comma-separated list. Comparison is case-insensitive and ignores spaces.
+ * This list is the only thing that decides who may sign in.
  */
 export function parseAdminEmails(raw: string | undefined): Set<string> {
   return new Set(
@@ -11,6 +12,6 @@ export function parseAdminEmails(raw: string | undefined): Set<string> {
   );
 }
 
-export function roleForEmail(email: string, adminEmails: Set<string>): "admin" | "user" {
-  return adminEmails.has(email.trim().toLowerCase()) ? "admin" : "user";
+export function isAdminEmail(email: string, adminEmails: Set<string>): boolean {
+  return adminEmails.has(email.trim().toLowerCase());
 }

@@ -29,7 +29,7 @@ export default function SignInPage() {
           </p>
         </div>
         <p className="text-on-leather-faint text-center font-sans text-sm">
-          Secure HTTP-only sessions · role-based access · no passwords stored
+          Secure HTTP-only sessions · owner-only access · no passwords stored
         </p>
       </section>
 

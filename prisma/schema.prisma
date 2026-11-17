@@ -61,23 +61,17 @@ enum DeliveryStatus {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Auth (Better Auth core tables + admin plugin fields)
+// Auth (Better Auth core tables)
 // ─────────────────────────────────────────────────────────────
 
 model User {
-  id            String    @id
+  id            String   @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  role          String    @default("user") /// "user" (Adventurer) | "admin" (Keeper)
-  banned        Boolean?  @default(false)
-  banReason     String?
-  banExpires    DateTime? @db.Timestamptz(3)
-  phone         String?
-  phoneVerified Boolean   @default(false)
-  createdAt     DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime  @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
 
   sessions Session[]
   accounts Account[]
@@ -86,16 +80,15 @@ model User {
 }
 
 model Session {
-  id             String   @id
-  expiresAt      DateTime @db.Timestamptz(3)
-  token          String   @unique
-  ipAddress      String?
-  userAgent      String?
-  impersonatedBy String?
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+  id        String   @id
+  expiresAt DateTime @db.Timestamptz(3)
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   @@index([userId])
   @@map("session")

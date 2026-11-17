@@ -37,3 +37,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Placeholders so Better Auth doesn't log config errors while pages are collected.
+          # The build never queries the database or signs anything; real values live in Vercel.
+          BETTER_AUTH_SECRET: ci-build-placeholder-not-used-at-runtime-000000
+          BETTER_AUTH_URL: http://localhost:3000

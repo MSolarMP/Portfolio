@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Fast first gate: bounce visitors with no session cookie away from private
  * areas before any rendering happens. This only checks that a cookie exists —
- * the real session and role checks happen server-side in `requireAdmin`.
+ * the real session and allow-list checks happen server-side in `requireAdmin`.
  */
 export function proxy(request: NextRequest) {
   if (getSessionCookie(request)) return NextResponse.next();

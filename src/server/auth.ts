@@ -2,8 +2,8 @@ import "server-only";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin, captcha, magicLink } from "better-auth/plugins";
-import { parseAdminEmails, roleForEmail } from "@/lib/admin-emails";
+import { captcha, magicLink } from "better-auth/plugins";
+import { isAdminEmail, parseAdminEmails } from "@/lib/admin-emails";
 import { db } from "./db";
 import { magicLinkEmail, sendEmail } from "./email";
 
@@ -13,7 +13,7 @@ import { magicLinkEmail, sendEmail } from "./email";
  * no magic link is sent, no user is created, no session is issued.
  */
 export const adminEmails = parseAdminEmails(process.env.ADMIN_EMAILS);
-const isKeeper = (email: string) => roleForEmail(email, adminEmails) === "admin";
+const isKeeper = (email: string) => isAdminEmail(email, adminEmails);
 
 // GitHub is only switched on once its credentials exist,
 // so the app runs locally before the OAuth app is created.
@@ -63,8 +63,7 @@ export const auth = betterAuth({
     user: {
       create: {
         // Only allow-listed emails can ever get an account (returning false cancels it).
-        before: async (user) =>
-          isKeeper(user.email) ? { data: { ...user, role: "admin" } } : false,
+        before: async (user) => (isKeeper(user.email) ? { data: user } : false),
       },
     },
     session: {
@@ -81,7 +80,6 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    admin({ defaultRole: "user", adminRoles: ["admin"] }),
     magicLink({
       expiresIn: 60 * 10,
       sendMagicLink: async ({ email, url }) => {

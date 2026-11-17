@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
   );
 }
 
-/** Every admin page renders inside this gate, which enforces the Keeper role. */
+/** Every admin page renders inside this gate, which enforces the ADMIN_EMAILS allow-list. */
 async function AdminGate({ children }: { children: React.ReactNode }) {
   await requireAdmin();
   return <>{children}</>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAdminEmails, roleForEmail } from "./admin-emails";
+import { isAdminEmail, parseAdminEmails } from "./admin-emails";
 
 describe("parseAdminEmails", () => {
   it("returns an empty set when unset", () => {
@@ -13,14 +13,14 @@ describe("parseAdminEmails", () => {
   });
 });
 
-describe("roleForEmail", () => {
+describe("isAdminEmail", () => {
   const admins = parseAdminEmails("keeper@example.com");
 
-  it("grants admin to allow-listed emails regardless of case", () => {
-    expect(roleForEmail("KEEPER@example.com", admins)).toBe("admin");
+  it("accepts allow-listed emails regardless of case", () => {
+    expect(isAdminEmail("KEEPER@example.com", admins)).toBe(true);
   });
 
-  it("defaults everyone else to user", () => {
-    expect(roleForEmail("visitor@example.com", admins)).toBe("user");
+  it("rejects everyone else", () => {
+    expect(isAdminEmail("visitor@example.com", admins)).toBe(false);
   });
 });

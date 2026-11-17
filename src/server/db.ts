@@ -10,7 +10,9 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createClient() {
   const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
+  // `next build` loads this module to collect page data but never queries,
+  // so CI can build without database secrets. At runtime, fail fast.
+  if (!connectionString && process.env.NEXT_PHASE !== "phase-production-build") {
     throw new Error("DATABASE_URL is not set. Copy .env.example to .env and fill it in.");
   }
   // Small pool per serverless instance: many instances × pg's default of 10

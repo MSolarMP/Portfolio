@@ -34,6 +34,8 @@ npm run db:seed           # load starter content
 npm run dev
 ```
 
+To sign in to the admin (`/admin`), set `BETTER_AUTH_SECRET` and put your email in `ADMIN_EMAILS`. Without `RESEND_API_KEY`, the magic link is printed in the terminal instead of emailed. Only allow-listed emails can sign in — visitors never need an account.
+
 | Script                                | What it does                                        |
 | ------------------------------------- | --------------------------------------------------- |
 | `npm run dev`                         | Start the dev server                                |
