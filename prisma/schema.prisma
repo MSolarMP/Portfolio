@@ -1,0 +1,365 @@
+// Portfolio — "Adventurer's Ledger"
+// Every piece of public copy and media lives in this database.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  USER // "Adventurer"
+  ADMIN // "Keeper"
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum MediaState {
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum QuestKind {
+  CLIENT // "Guild contract"
+  PERSONAL // "Personal forge"
+}
+
+enum Rarity {
+  LEGENDARY
+  EPIC
+  RARE
+}
+
+enum BlockType {
+  TEXT
+  RICHTEXT
+}
+
+enum Channel {
+  EMAIL
+  SMS
+}
+
+enum DeliveryStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ─────────────────────────────────────────────────────────────
+// Auth (Better Auth core tables + admin plugin fields)
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          Role      @default(USER)
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  phone         String?
+  phoneVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions  Session[]
+  accounts  Account[]
+  runes     UserRune[]
+  guestbook GuestbookEntry[]
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Content
+// ─────────────────────────────────────────────────────────────
+
+/// All page copy, addressed by a dotted key, e.g. "home.hero.tagline".
+model ContentBlock {
+  key       String    @id
+  page      String
+  label     String
+  type      BlockType @default(TEXT)
+  text      String?
+  rich      Json? /// Tiptap JSON when type = RICHTEXT
+  order     Int       @default(0)
+  updatedAt DateTime  @updatedAt
+
+  @@index([page])
+}
+
+/// Side quests (hobbies) on the About page.
+model Interest {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  tagline   String?
+  body      Json?
+  attribute String? /// "Perception", "Endurance", …
+  stats     Json? /// [{ label, value }]
+  order     Int      @default(0)
+  status    Status   @default(DRAFT)
+  featured  Boolean  @default(false)
+  coverId   String?
+  cover     Media?   @relation("InterestCover", fields: [coverId], references: [id], onDelete: SetNull)
+  albums    Album[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Album {
+  id         String    @id @default(cuid())
+  slug       String    @unique
+  title      String
+  region     String? /// coarse only, e.g. "Eastern Cape"
+  order      Int       @default(0)
+  interestId String?
+  interest   Interest? @relation(fields: [interestId], references: [id], onDelete: SetNull)
+  media      Media[]
+  createdAt  DateTime  @default(now())
+}
+
+model Media {
+  id        String     @id @default(cuid())
+  kind      MediaKind
+  state     MediaState @default(UPLOADING)
+  key       String     @unique /// R2 object key of the original (private prefix)
+  filename  String
+  mimeType  String
+  bytes     Int?
+  variants  Json? /// { avif: { 640: key, 1280: key, 1920: key }, webp: {…} }
+  width     Int?
+  height    Int?
+  blurData  String? /// tiny base64 placeholder
+  alt       String?
+  caption   String?
+  exif      Json? /// camera, lens, aperture, shutter, iso — never GPS
+  region    String?
+  error     String?
+  order     Int        @default(0)
+  albumId   String?
+  album     Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  coverOf   Interest[] @relation("InterestCover")
+  diagramOf Quest[]    @relation("QuestDiagram")
+
+  @@index([albumId])
+  @@index([state])
+}
+
+/// Case studies (client) and personal projects.
+model Quest {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String /// themed title, e.g. "The Great Migration"
+  client      String?
+  kind        QuestKind @default(CLIENT)
+  rarity      Rarity    @default(EPIC)
+  role        String?
+  summary     String
+  briefing    Json?
+  problem     Json?
+  constraints Json?
+  approach    Json?
+  bossFight   Json?
+  outcome     Json?
+  loot        Json?
+  stack       String[]
+  diagramId   String?
+  diagram     Media?    @relation("QuestDiagram", fields: [diagramId], references: [id], onDelete: SetNull)
+  repoUrl     String?
+  liveUrl     String?
+  featured    Boolean   @default(false)
+  status      Status    @default(DRAFT)
+  order       Int       @default(0)
+  chapterId   String?
+  chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+/// Experience entries ("The Chronicle").
+model Chapter {
+  id        String    @id @default(cuid())
+  numeral   String /// "I", "II", "III"
+  role      String
+  company   String
+  location  String?
+  startDate DateTime
+  endDate   DateTime?
+  summary   String
+  bullets   String[]
+  stack     String[]
+  order     Int       @default(0)
+  quests    Quest[]
+}
+
+model Education {
+  id          String @id @default(cuid())
+  title       String
+  institution String
+  years       String
+  kind        String /// "diploma" | "certification"
+  order       Int    @default(0)
+}
+
+model Skill {
+  id       String  @id @default(cuid())
+  name     String
+  category String /// frontend | backend | data | mobile | cloud | ai
+  headline Boolean @default(false)
+  order    Int     @default(0)
+
+  @@unique([category, name])
+}
+
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// Inbox & messaging
+// ─────────────────────────────────────────────────────────────
+
+/// "Send a Raven" contact messages.
+model Message {
+  id         String         @id @default(cuid())
+  name       String
+  email      String
+  company    String?
+  purpose    String
+  body       String
+  readAt     DateTime?
+  archivedAt DateTime?
+  createdAt  DateTime       @default(now())
+  notices    Notification[]
+
+  @@index([createdAt])
+}
+
+model Notification {
+  id         String         @id @default(cuid())
+  channel    Channel
+  template   String
+  to         String
+  provider   String
+  providerId String?
+  status     DeliveryStatus @default(QUEUED)
+  attempts   Int            @default(0)
+  error      String?
+  messageId  String?
+  message    Message?       @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([providerId])
+  @@index([createdAt])
+}
+
+model GuestbookEntry {
+  id        String   @id @default(cuid())
+  body      String
+  approved  Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Runes (achievements)
+// ─────────────────────────────────────────────────────────────
+
+model Rune {
+  id          String     @id /// stable slug, e.g. "first-visit"
+  numeral     String
+  title       String
+  description String
+  xp          Int        @default(50)
+  hidden      Boolean    @default(false)
+  order       Int        @default(0)
+  unlockedBy  UserRune[]
+}
+
+model UserRune {
+  userId     String
+  runeId     String
+  unlockedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rune       Rune     @relation(fields: [runeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, runeId])
+}

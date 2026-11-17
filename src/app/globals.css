@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/*
+ * "Adventurer's Ledger" design tokens.
+ * Use them as Tailwind utilities: bg-parchment, text-ink, border-bronze, font-display, …
+ */
+@theme {
+  --color-parchment: #efe3c6;
+  --color-vellum: #f7eeda;
+  --color-vellum-light: #fbf6ea;
+  --color-aged: #e3d2ac;
+  --color-ink: #2b2118;
+  --color-ink-faded: #5c4a36;
+  --color-leather: #3a2a1e;
+  --color-leather-dark: #2a1e15;
+  --color-gold-thread: #d4a84b;
+  --color-bronze: #a87b2f;
+  --color-bronze-text: #7a5418;
+  --color-oxblood: #7c2d25;
+  --color-oxblood-dark: #5a1f19;
+  --color-moss: #4f6b3a;
+  --color-moss-bg: #dde6cf;
+  --color-moss-text: #3d5530;
+  --color-lake: #2d5470;
+  --color-lake-bg: #d6e2ea;
+  --color-rule: #c9ae78;
+  --color-rule-soft: #dcc79b;
+  --color-rule-faint: #e6d6b0;
+
+  --font-display: var(--font-cinzel), Georgia, serif;
+  --font-serif: var(--font-garamond), Georgia, serif;
+  --font-sans: var(--font-alegreya-sans), system-ui, sans-serif;
+  --font-jp: var(--font-noto-serif-jp), serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-parchment);
+    background-image:
+      radial-gradient(ellipse at 12% 8%, rgb(168 123 47 / 0.12), transparent 40%),
+      radial-gradient(ellipse at 90% 60%, rgb(124 45 37 / 0.07), transparent 45%),
+      radial-gradient(ellipse at 40% 100%, rgb(79 107 58 / 0.08), transparent 45%);
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+  }
+
+  a {
+    color: var(--color-oxblood);
+  }
+  a:hover {
+    color: var(--color-oxblood-dark);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-oxblood);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Vellum card with bronze border + inset rule */
+  .ledger-card {
+    position: relative;
+    background: var(--color-vellum);
+    border: 1px solid var(--color-bronze);
+    outline: 1px solid rgb(168 123 47 / 0.45);
+    outline-offset: -7px;
+    box-shadow:
+      0 2px 0 rgb(58 42 30 / 0.12),
+      0 10px 24px rgb(58 42 30 / 0.1);
+  }
+  /* Diamond gems top + bottom centre */
+  .gem::before,
+  .gem::after {
+    content: "";
+    position: absolute;
+    left: calc(50% - 6px);
+    width: 12px;
+    height: 12px;
+    background: var(--color-bronze);
+    transform: rotate(45deg);
+  }
+  .gem::before {
+    top: -7px;
+  }
+  .gem::after {
+    bottom: -7px;
+  }
+
+  .wax-seal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: var(--color-oxblood);
+    color: #f2ddba;
+    font-family: var(--font-display);
+    font-weight: 800;
+    box-shadow:
+      inset 0 0 0 3px #6a2620,
+      inset 0 0 0 5px rgb(242 221 186 / 0.25),
+      0 2px 4px rgb(58 42 30 / 0.35);
+  }
+
+  .leather {
+    background-color: var(--color-leather);
+    background-image: radial-gradient(ellipse at 30% 20%, rgb(212 168 75 / 0.1), transparent 50%);
+    color: #f2e6cc;
+  }
+  .stitched {
+    outline: 1px dashed rgb(212 168 75 / 0.55);
+    outline-offset: -8px;
+  }
+
+  .label-caps {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-bronze-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
