@@ -2,7 +2,7 @@
 
 A full stack portfolio built as a working product rather than a static page. Every word and image on the public site comes from the database and is managed through a custom admin portal.
 
-**Live:** _coming soon_
+**Live:** [mattcreates.co.za](https://mattcreates.co.za)
 
 ## Stack
 

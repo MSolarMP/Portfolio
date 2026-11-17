@@ -175,6 +175,9 @@ model Interest {
   albums    Album[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([coverId])
+  @@index([status, order])
 }
 
 model Album {
@@ -187,6 +190,8 @@ model Album {
   interest   Interest? @relation(fields: [interestId], references: [id], onDelete: SetNull)
   media      Media[]
   createdAt  DateTime  @default(now())
+
+  @@index([interestId])
 }
 
 model Media {
@@ -248,6 +253,10 @@ model Quest {
   chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([diagramId])
+  @@index([chapterId])
+  @@index([status, order])
 }
 
 /// Experience entries ("The Chronicle").
@@ -328,6 +337,7 @@ model Notification {
 
   @@index([providerId])
   @@index([createdAt])
+  @@index([messageId])
 }
 
 model GuestbookEntry {
@@ -337,6 +347,8 @@ model GuestbookEntry {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -362,4 +374,5 @@ model UserRune {
   rune       Rune     @relation(fields: [runeId], references: [id], onDelete: Cascade)
 
   @@id([userId, runeId])
+  @@index([runeId])
 }
