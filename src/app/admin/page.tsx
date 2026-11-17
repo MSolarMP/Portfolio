@@ -25,7 +25,7 @@ export default async function AdminOverview() {
     <div className="flex flex-col gap-6">
       <div>
         <span className="text-ink-faded text-sm">The Archive</span>
-        <h1 className="font-display text-3xl font-bold text-balance break-words">
+        <h1 className="font-display text-3xl font-bold text-balance wrap-break-word">
           Welcome back, {session?.user.name?.split(" ")[0] || "Keeper"}
         </h1>
         <p className="text-ink-faded">Here&apos;s the state of the ledger.</p>

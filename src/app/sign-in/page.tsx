@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Sign in" };
 export default function SignInPage() {
   return (
     <div className="flex min-h-screen flex-wrap">
-      <section className="leather flex min-h-[380px] flex-[1_1_520px] flex-col justify-between gap-8 p-8 sm:p-12">
+      <section className="leather flex min-h-95 flex-[1_1_520px] flex-col justify-between gap-8 p-8 sm:p-12">
         <Link
           href="/"
           className="font-display text-gold-thread hover:text-gold-light inline-flex min-h-11 items-center self-start font-bold"
