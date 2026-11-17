@@ -14,11 +14,6 @@ datasource db {
 // Enums
 // ─────────────────────────────────────────────────────────────
 
-enum Role {
-  USER // "Adventurer"
-  ADMIN // "Keeper"
-}
-
 enum Status {
   DRAFT
   PUBLISHED
@@ -75,34 +70,32 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
-  role          Role      @default(USER)
+  role          String    @default("user") /// "user" (Adventurer) | "admin" (Keeper)
   banned        Boolean?  @default(false)
   banReason     String?
-  banExpires    DateTime?
+  banExpires    DateTime? @db.Timestamptz(3)
   phone         String?
   phoneVerified Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(3)
 
-  sessions  Session[]
-  accounts  Account[]
-  runes     UserRune[]
-  guestbook GuestbookEntry[]
+  sessions Session[]
+  accounts Account[]
 
   @@map("user")
 }
 
 model Session {
   id             String   @id
-  expiresAt      DateTime
+  expiresAt      DateTime @db.Timestamptz(3)
   token          String   @unique
   ipAddress      String?
   userAgent      String?
   impersonatedBy String?
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
 
   @@index([userId])
   @@map("session")
@@ -117,13 +110,14 @@ model Account {
   accessToken           String?
   refreshToken          String?
   idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(3)
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt             DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(3)
 
+  @@unique([providerId, accountId])
   @@index([userId])
   @@map("account")
 }
@@ -132,11 +126,12 @@ model Verification {
   id         String   @id
   identifier String
   value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  expiresAt  DateTime @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
 
   @@index([identifier])
+  @@index([expiresAt])
   @@map("verification")
 }
 
@@ -153,7 +148,7 @@ model ContentBlock {
   text      String?
   rich      Json? /// Tiptap JSON when type = RICHTEXT
   order     Int       @default(0)
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
 
   @@index([page])
 }
@@ -173,8 +168,8 @@ model Interest {
   coverId   String?
   cover     Media?   @relation("InterestCover", fields: [coverId], references: [id], onDelete: SetNull)
   albums    Album[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   @@index([coverId])
   @@index([status, order])
@@ -189,7 +184,7 @@ model Album {
   interestId String?
   interest   Interest? @relation(fields: [interestId], references: [id], onDelete: SetNull)
   media      Media[]
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
 
   @@index([interestId])
 }
@@ -214,8 +209,8 @@ model Media {
   order     Int        @default(0)
   albumId   String?
   album     Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(3)
 
   coverOf   Interest[] @relation("InterestCover")
   diagramOf Quest[]    @relation("QuestDiagram")
@@ -251,8 +246,8 @@ model Quest {
   order       Int       @default(0)
   chapterId   String?
   chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
 
   @@index([diagramId])
   @@index([chapterId])
@@ -266,8 +261,8 @@ model Chapter {
   role      String
   company   String
   location  String?
-  startDate DateTime
-  endDate   DateTime?
+  startDate DateTime  @db.Date
+  endDate   DateTime? @db.Date
   summary   String
   bullets   String[]
   stack     String[]
@@ -297,7 +292,7 @@ model Skill {
 model SiteSetting {
   key       String   @id
   value     Json
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -312,9 +307,9 @@ model Message {
   company    String?
   purpose    String
   body       String
-  readAt     DateTime?
-  archivedAt DateTime?
-  createdAt  DateTime       @default(now())
+  readAt     DateTime?      @db.Timestamptz(3)
+  archivedAt DateTime?      @db.Timestamptz(3)
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
   notices    Notification[]
 
   @@index([createdAt])
@@ -332,47 +327,31 @@ model Notification {
   error      String?
   messageId  String?
   message    Message?       @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime       @updatedAt @db.Timestamptz(3)
 
   @@index([providerId])
   @@index([createdAt])
   @@index([messageId])
 }
 
-model GuestbookEntry {
-  id        String   @id @default(cuid())
-  body      String
-  approved  Boolean  @default(false)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
 // ─────────────────────────────────────────────────────────────
-// Runes (achievements)
+// Commendations (LinkedIn recommendations, entered via the admin)
 // ─────────────────────────────────────────────────────────────
 
-model Rune {
-  id          String     @id /// stable slug, e.g. "first-visit"
-  numeral     String
-  title       String
-  description String
-  xp          Int        @default(50)
-  hidden      Boolean    @default(false)
-  order       Int        @default(0)
-  unlockedBy  UserRune[]
-}
+model Commendation {
+  id           String    @id @default(cuid())
+  quote        String
+  name         String
+  headline     String? /// recommender's role at the time, e.g. "CTO at FantasyGo"
+  relationship String? /// e.g. "Managed Matthew directly"
+  givenOn      DateTime? @db.Date
+  profileUrl   String? /// recommender's LinkedIn profile
+  featured     Boolean   @default(false)
+  status       Status    @default(DRAFT)
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
 
-model UserRune {
-  userId     String
-  runeId     String
-  unlockedAt DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rune       Rune     @relation(fields: [runeId], references: [id], onDelete: Cascade)
-
-  @@id([userId, runeId])
-  @@index([runeId])
+  @@index([status, order])
 }

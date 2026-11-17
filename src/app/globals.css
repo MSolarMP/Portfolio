@@ -14,10 +14,18 @@
   --color-leather: #3a2a1e;
   --color-leather-dark: #2a1e15;
   --color-gold-thread: #d4a84b;
+  --color-gold-light: #f0d58c;
+  --color-on-leather: #f2e6cc;
+  --color-on-leather-muted: #e6d6b4;
+  --color-on-leather-faint: #cdbb95;
+  --color-seal-text: #f2ddba;
+  --color-seal-rim: #6a2620;
   --color-bronze: #a87b2f;
   --color-bronze-text: #7a5418;
   --color-oxblood: #7c2d25;
   --color-oxblood-dark: #5a1f19;
+  --color-oxblood-deep: #4a1a15;
+  --color-oxblood-bg: #f1d3cc;
   --color-moss: #4f6b3a;
   --color-moss-bg: #dde6cf;
   --color-moss-text: #3d5530;
@@ -55,6 +63,10 @@
   :focus-visible {
     outline: 2px solid var(--color-oxblood);
     outline-offset: 2px;
+  }
+  /* Oxblood is ~1.5:1 on leather — switch the ring to gold there (6.2:1). */
+  .leather :focus-visible {
+    outline-color: var(--color-gold-thread);
   }
 }
 
@@ -95,11 +107,11 @@
     flex-shrink: 0;
     border-radius: 9999px;
     background: var(--color-oxblood);
-    color: #f2ddba;
+    color: var(--color-seal-text);
     font-family: var(--font-display);
     font-weight: 800;
     box-shadow:
-      inset 0 0 0 3px #6a2620,
+      inset 0 0 0 3px var(--color-seal-rim),
       inset 0 0 0 5px rgb(242 221 186 / 0.25),
       0 2px 4px rgb(58 42 30 / 0.35);
   }
@@ -107,7 +119,7 @@
   .leather {
     background-color: var(--color-leather);
     background-image: radial-gradient(ellipse at 30% 20%, rgb(212 168 75 / 0.1), transparent 50%);
-    color: #f2e6cc;
+    color: var(--color-on-leather);
   }
   .stitched {
     outline: 1px dashed rgb(212 168 75 / 0.55);
@@ -130,5 +142,12 @@
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+  /* The universal selector doesn't reach view-transition pseudo-elements. */
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
   }
 }

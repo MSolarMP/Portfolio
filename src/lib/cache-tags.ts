@@ -12,5 +12,5 @@ export const tags = {
   skills: "skills",
   media: "media",
   settings: "settings",
-  runes: "runes",
+  commendations: "commendations",
 } as const;

@@ -11,6 +11,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    // Enables forbidden() / unauthorized() for role checks in the admin.
+    authInterrupts: true,
+  },
   turbopack: {
     rules: {
       "*.css": {

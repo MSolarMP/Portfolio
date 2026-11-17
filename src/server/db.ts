@@ -13,7 +13,14 @@ function createClient() {
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set. Copy .env.example to .env and fill it in.");
   }
-  const adapter = new PrismaPg({ connectionString });
+  // Small pool per serverless instance: many instances × pg's default of 10
+  // would exhaust Supavisor's client limit.
+  const adapter = new PrismaPg({
+    connectionString,
+    max: 3,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 5_000,
+  });
   return new PrismaClient({ adapter });
 }
 

@@ -11,12 +11,12 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Framework       | Next.js (App Router, Cache Components) · TypeScript                     |
 | Styling         | Tailwind CSS                                                            |
 | Database        | PostgreSQL on Supabase · Prisma ORM                                     |
-| Auth            | Better Auth — GitHub, Google, magic link · role-based access            |
+| Auth            | Better Auth — owner-only sign-in (magic link, GitHub)                   |
 | Media           | Cloudflare R2 (presigned uploads, AVIF/WebP variants, EXIF without GPS) |
-| Background jobs | Inngest (media processing, email/SMS queue)                             |
+| Background jobs | Next.js `after()`; a durable queue arrives with SMS                     |
 | Email / SMS     | Resend · SMS Portal                                                     |
 | Edge            | Vercel hosting · Cloudflare DNS, Turnstile                              |
-| Testing         | Vitest · Playwright · GitHub Actions                                    |
+| Testing         | Vitest · GitHub Actions                                                 |
 
 ## How content is served
 
@@ -52,6 +52,34 @@ src/app/           routes — public site, /admin, API handlers
 src/server/        server-only code: database, auth, services
 src/lib/           shared utilities, schemas, cache tags
 ```
+
+## Architecture
+
+```mermaid
+flowchart LR
+  V[Browser] --> CF[Cloudflare DNS<br/>DNS only]
+  CF --> VC[Vercel · Next.js<br/>region dub1]
+  VC -->|Prisma · pooled| DB[(Supabase Postgres<br/>eu-west-1)]
+  V -->|presigned upload| R2O[(R2 · private originals)]
+  VC --> R2P[(R2 · public variants)]
+  VC --> MAIL[Resend]
+```
+
+One Next.js app. Public pages render from the database inside cached functions; admin saves refresh only the affected cache tags.
+
+### Key decisions
+
+| Decision                                                                          | Why                                                                                                                                                    |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| One app (modular monolith), not separate admin/API services                       | One developer, low traffic: one deploy and one auth system. Split when a second app exists.                                                            |
+| Supabase as plain Postgres, accessed only through Prisma                          | One typed data path. The public Data API is locked (RLS on, no policies, privileges revoked).                                                          |
+| Sign-in is for the owner only (Better Auth: magic link, GitHub; email allow-list) | Visitors never need an account, so no personal data is collected. No passwords stored. Checked in the proxy, the admin layout and every server action. |
+| Database-driven content with tag-based caching                                    | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                               |
+| Media in Cloudflare R2: private originals, public variants                        | 10 GB free with no egress fees; GPS stripped before anything is public.                                                                                |
+| `after()` for background work; a queue only once SMS needs retries                | No infrastructure before a workload needs it.                                                                                                          |
+| Migrations run during production builds only                                      | Schema and code ship together; previews never change the live schema. Migrations stay additive.                                                        |
+| Functions pinned to `dub1`, next to the database                                  | Saves ~75 ms on every database round trip.                                                                                                             |
+| One shared database while pre-launch                                              | No real data yet; revisit before launch.                                                                                                               |
 
 ## Licence
 

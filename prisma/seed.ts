@@ -261,46 +261,10 @@ const interests = [
   { slug: "exploring", title: "Exploring", attribute: "Wanderlust", featured: false, order: 4 },
 ];
 
-const runes = [
-  {
-    id: "first-visit",
-    numeral: "I",
-    title: "First Visit",
-    description: "Entered the ledger",
-    xp: 50,
-  },
-  { id: "sworn-in", numeral: "II", title: "Sworn In", description: "Signed in", xp: 100 },
-  { id: "scholar", numeral: "III", title: "Scholar", description: "Read 3 quests", xp: 100 },
-  {
-    id: "cartographer",
-    numeral: "IV",
-    title: "Cartographer",
-    description: "Opened the realm map",
-    xp: 50,
-  },
-  { id: "raven-keeper", numeral: "V", title: "Raven Keeper", description: "Sent a raven", xp: 100 },
-  {
-    id: "oracles-favour",
-    numeral: "VI",
-    title: "Oracle's Favour",
-    description: "Asked the Oracle",
-    xp: 50,
-  },
-  { id: "duellist", numeral: "VII", title: "Duellist", description: "Won a duel", xp: 150 },
-  {
-    id: "hidden",
-    numeral: "?",
-    title: "Hidden",
-    description: "Found the secret page",
-    xp: 200,
-    hidden: true,
-  },
-];
-
 const settings: Record<string, unknown> = {
   openToWork: true,
   roleType: "[ROLE TYPE]",
-  features: { oracle: false, runes: true, guestbook: true, duel: false, sound: false },
+  features: { duel: false, sound: false },
 };
 
 async function main() {
@@ -346,10 +310,6 @@ async function main() {
     });
   }
 
-  for (const [order, r] of runes.entries()) {
-    await db.rune.upsert({ where: { id: r.id }, create: { ...r, order }, update: {} });
-  }
-
   for (const [key, value] of Object.entries(settings)) {
     await db.siteSetting.upsert({
       where: { key },
@@ -359,7 +319,7 @@ async function main() {
   }
 
   console.log(
-    `Seeded ${blocks.length} content blocks, ${chapters.length} chapters, ${quests.length} quests, ${interests.length} side quests, ${runes.length} runes.`,
+    `Seeded ${blocks.length} content blocks, ${chapters.length} chapters, ${quests.length} quests, ${interests.length} side quests.`,
   );
 }
 
