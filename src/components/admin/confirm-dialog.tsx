@@ -10,12 +10,15 @@ import { Button } from "./button";
  */
 export function ConfirmDialog({
   triggerLabel,
+  triggerAriaLabel,
   title,
   description,
   confirmLabel = "Confirm",
   onConfirm,
 }: {
   triggerLabel: string;
+  /** A fuller name for screen readers when the visible label is short, e.g. "Delete React". */
+  triggerAriaLabel?: string;
   title: string;
   description: ReactNode;
   confirmLabel?: string;
@@ -26,7 +29,11 @@ export function ConfirmDialog({
 
   return (
     <>
-      <Button variant="secondary" onClick={() => dialog.current?.showModal()}>
+      <Button
+        variant="secondary"
+        aria-label={triggerAriaLabel}
+        onClick={() => dialog.current?.showModal()}
+      >
         {triggerLabel}
       </Button>
       <dialog

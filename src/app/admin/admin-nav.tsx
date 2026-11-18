@@ -14,7 +14,7 @@ const groups: { title: string; items: Item[] }[] = [
       { label: "Side quests", href: "/admin/side-quests", ready: true },
       { label: "Quests (case studies)", href: "/admin/quests", ready: true },
       { label: "Chronicle", href: "/admin/chronicle", ready: true },
-      { label: "Skills", href: "/admin/skills", ready: false },
+      { label: "Skills", href: "/admin/skills", ready: true },
       { label: "Commendations", href: "/admin/commendations", ready: false },
       { label: "Media vault", href: "/admin/media", ready: false },
     ],
