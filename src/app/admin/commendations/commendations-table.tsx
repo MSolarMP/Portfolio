@@ -7,7 +7,7 @@ import type { Status } from "@/generated/prisma/enums";
 import { excerpt, formatDate } from "@/lib/format";
 import { reorderCommendations } from "./actions";
 
-export type Row = {
+type Row = {
   id: string;
   name: string;
   headline: string | null;

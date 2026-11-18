@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
+import { PageHeader } from "@/components/admin/page-header";
 import { formatBytes } from "@/lib/format";
 import { listMedia } from "@/server/content/media";
 import { UploadForm } from "./upload-form";
@@ -12,14 +13,11 @@ export const metadata: Metadata = { title: "Media vault" };
 export default function MediaVault() {
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <div>
-        <span className="text-ink-faded text-sm">Content</span>
-        <h1 className="font-display text-3xl font-bold">Media vault</h1>
-        <p className="text-ink-faded">
-          Photos and diagrams. Each upload is resized to AVIF and WebP for the site; the original
-          stays private.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Media vault"
+        description="Images for the site: your profile photo, project screenshots, diagrams and covers. Each upload is resized to AVIF and WebP; the original stays private."
+      />
 
       <UploadForm />
 

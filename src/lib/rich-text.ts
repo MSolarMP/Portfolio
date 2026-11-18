@@ -7,7 +7,7 @@ import { z } from "zod";
  * The editor (`components/admin/rich-text-editor.tsx`) is configured to match.
  */
 
-export type RichMark = { type: string; attrs?: Record<string, unknown> };
+type RichMark = { type: string; attrs?: Record<string, unknown> };
 export type RichNode = {
   type: string;
   attrs?: Record<string, unknown>;

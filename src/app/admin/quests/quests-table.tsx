@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/format";
 import { RARITY_LABELS } from "./labels";
 import { reorderQuests } from "./actions";
 
-export type Row = {
+type Row = {
   id: string;
   title: string;
   slug: string;

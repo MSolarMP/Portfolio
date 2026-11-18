@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { enabledProviders } from "@/server/auth";
 import { SignInForm } from "./sign-in-form";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -38,7 +37,7 @@ export default function SignInPage() {
           <span className="label-caps">Speak your name, traveller</span>
           <h2 className="font-display text-3xl font-bold">Sign in</h2>
           <Suspense fallback={<div className="h-72" aria-busy="true" />}>
-            <SignInForm providers={enabledProviders} />
+            <SignInForm />
           </Suspense>
           <p className="text-ink-faded text-base">
             Only the site&apos;s owner can sign in. Visitors don&apos;t need an account.

@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useId, useRef, useState } from "react";
+import { useId, useRef } from "react";
 import { Button } from "@/components/admin/button";
+import { createdState, useEditorForm } from "@/components/admin/use-editor-form";
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { SaveBar } from "@/components/admin/save-bar";
-import { type ActionState, idle } from "@/lib/action-state";
 import { BULLETS_MAX, CHAPTER_SUMMARY_MAX } from "@/lib/schemas/chapter";
 import { parseStack, STACK_MAX } from "@/lib/schemas/fields";
 import { createChapter, updateChapter } from "./actions";
@@ -48,11 +48,6 @@ function normalise(v: Values): Values {
   };
 }
 
-const same = (a: Values, b: Values) =>
-  JSON.stringify(normalise(a)) === JSON.stringify(normalise(b));
-
-const created: ActionState = { status: "success", message: "Created.", at: 0 };
-
 const card = "bg-vellum border-rule flex flex-col gap-4 rounded border px-4 py-5 sm:px-5";
 
 /** Create (no `id`) or edit (with `id`) a Chronicle chapter. */
@@ -65,30 +60,13 @@ export function ChapterForm({
   initial: Values;
   justCreated?: boolean;
 }) {
-  const [saved, setSaved] = useState(initial);
-  const [values, setValues] = useState(initial);
-  const dirty = !same(values, saved);
-
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = id
-        ? await updateChapter(id, prev, formData)
-        : await createChapter(prev, formData);
-      if (result.status === "success") {
-        const stored = normalise(values);
-        setSaved(stored);
-        setValues(stored);
-      }
-      return result;
-    },
-    justCreated ? created : idle,
-  );
-
-  const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
-
-  function set<K extends keyof Values>(key: K, value: Values[K]) {
-    setValues((v) => ({ ...v, [key]: value }));
-  }
+  const { values, set, dirty, state, formAction, pending, errors, revert } = useEditorForm<Values>({
+    initial,
+    normalise: normalise,
+    submit: (prev, formData) =>
+      id ? updateChapter(id, prev, formData) : createChapter(prev, formData),
+    initialState: justCreated ? createdState() : undefined,
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -235,7 +213,7 @@ export function ChapterForm({
         dirty={dirty}
         pending={pending}
         state={state}
-        onRevert={() => setValues(saved)}
+        onRevert={revert}
       />
     </form>
   );

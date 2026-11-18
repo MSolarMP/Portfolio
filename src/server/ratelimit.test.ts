@@ -18,7 +18,7 @@ const magicLinkRequest = (email: string, ip = "203.0.113.7") =>
   new Request("http://localhost:3000/api/auth/sign-in/magic-link", {
     method: "POST",
     headers: { "content-type": "application/json", "x-forwarded-for": `${ip}, 10.0.0.1` },
-    body: JSON.stringify({ email, callbackURL: "/enter" }),
+    body: JSON.stringify({ email, callbackURL: "/admin" }),
   });
 
 describe("helpers", () => {

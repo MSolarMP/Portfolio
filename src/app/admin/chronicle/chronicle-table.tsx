@@ -4,7 +4,7 @@ import Link from "next/link";
 import { type Column, DataTable } from "@/components/admin/data-table";
 import { reorderChapters } from "./actions";
 
-export type Row = {
+type Row = {
   id: string;
   numeral: string;
   role: string;

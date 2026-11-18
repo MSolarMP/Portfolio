@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
+import { PageHeader } from "@/components/admin/page-header";
 import { readRichDoc } from "@/lib/rich-text";
 import { listContentBlocks } from "@/server/content/content-blocks";
 import { BlockForm } from "./block-form";
@@ -11,13 +12,11 @@ export const metadata: Metadata = { title: "Pages & copy" };
 export default function PagesAdmin() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <div>
-        <span className="text-ink-faded text-sm">Content</span>
-        <h1 className="font-display text-3xl font-bold">Pages & copy</h1>
-        <p className="text-ink-faded">
-          Every line of text on the public site. Saving a block refreshes only its page.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Pages & copy"
+        description="Every line of text on the public site. Saving a block refreshes only its page."
+      />
 
       <Suspense fallback={<ContentSkeleton label="Loading page copy…" />}>
         <Blocks />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
+import { PageHeader } from "@/components/admin/page-header";
 import { listInterests } from "@/server/content/interests";
 import { SideQuestsTable } from "./side-quests-table";
 
@@ -10,21 +10,12 @@ export const metadata: Metadata = { title: "Side quests" };
 export default function SideQuestsAdmin() {
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <span className="text-ink-faded text-sm">Content</span>
-          <h1 className="font-display text-3xl font-bold">Side quests</h1>
-          <p className="text-ink-faded">
-            Hobbies on the About page. The order here is the order visitors see.
-          </p>
-        </div>
-        <Link
-          href="/admin/side-quests/new"
-          className="bg-oxblood text-seal-text hover:bg-oxblood-dark hover:text-seal-text inline-flex min-h-11 items-center rounded px-4 font-sans font-bold"
-        >
-          New side quest
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Side quests"
+        description="Hobbies on the About page. The order here is the order visitors see."
+        action={{ href: "/admin/side-quests/new", label: "New side quest" }}
+      />
 
       <Suspense fallback={<ContentSkeleton label="Loading side quests…" />}>
         <SideQuestsList />

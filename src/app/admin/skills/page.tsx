@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
+import { PageHeader } from "@/components/admin/page-header";
 import { SKILL_CATEGORIES, type SkillCategory } from "@/lib/schemas/skill";
 import { listSkills } from "@/server/content/skills";
 import { AddSkillForm } from "./add-skill-form";
@@ -11,14 +12,11 @@ export const metadata: Metadata = { title: "Skills" };
 export default function SkillsAdmin() {
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <div>
-        <span className="text-ink-faded text-sm">Content</span>
-        <h1 className="font-display text-3xl font-bold">Skills (spells)</h1>
-        <p className="text-ink-faded">
-          The skill tree, by category. Headline skills are shown larger. Drag to change the order
-          within a category.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Skills (spells)"
+        description="The skill tree, by category. Headline skills are shown larger. Drag to change the order within a category."
+      />
 
       <AddSkillForm />
 

@@ -1,9 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
 import { FormField, fieldClass } from "@/components/admin/form-field";
+import { createdState, useEditorForm } from "@/components/admin/use-editor-form";
 import { SaveBar } from "@/components/admin/save-bar";
-import { type ActionState, idle } from "@/lib/action-state";
 import { updateMedia } from "./actions";
 
 type Values = { alt: string; caption: string };
@@ -12,8 +11,6 @@ const trim = (v: Values): Values => ({
   alt: v.alt.trim(),
   caption: v.caption.trim(),
 });
-
-const created: ActionState = { status: "success", message: "Uploaded.", at: 0 };
 
 /** Alt text and caption for one image. */
 export function DetailsForm({
@@ -25,24 +22,12 @@ export function DetailsForm({
   initial: Values;
   justCreated: boolean;
 }) {
-  const [saved, setSaved] = useState(initial);
-  const [values, setValues] = useState(initial);
-  const dirty = JSON.stringify(trim(values)) !== JSON.stringify(trim(saved));
-
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = await updateMedia(id, prev, formData);
-      if (result.status === "success") {
-        setSaved(trim(values));
-        setValues(trim(values));
-      }
-      return result;
-    },
-    justCreated ? created : idle,
-  );
-
-  const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
-  const set = (key: keyof Values, value: string) => setValues((v) => ({ ...v, [key]: value }));
+  const { values, set, dirty, state, formAction, pending, errors, revert } = useEditorForm<Values>({
+    initial,
+    normalise: trim,
+    submit: (prev, formData) => updateMedia(id, prev, formData),
+    initialState: justCreated ? createdState("Uploaded.") : undefined,
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -83,7 +68,7 @@ export function DetailsForm({
         dirty={dirty}
         pending={pending}
         state={state}
-        onRevert={() => setValues(saved)}
+        onRevert={revert}
       />
     </form>
   );

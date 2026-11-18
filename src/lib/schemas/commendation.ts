@@ -40,8 +40,6 @@ export const commendationSchema = z
     givenOn: givenOn ? dayToDate(givenOn) : null,
   }));
 
-export type CommendationInput = z.infer<typeof commendationSchema>;
-
 export function commendationFormValues(formData: FormData) {
   const text = (name: string) => formData.get(name) ?? "";
   return {

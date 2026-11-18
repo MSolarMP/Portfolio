@@ -50,8 +50,6 @@ export const chapterSchema = z
     endDate: endMonth ? monthToDate(endMonth) : null,
   }));
 
-export type ChapterInput = z.infer<typeof chapterSchema>;
-
 /** Reads the chapter editor's form fields. Bullets arrive as repeated `bullet` fields; blank ones are dropped. */
 export function chapterFormValues(formData: FormData) {
   const text = (name: string) => formData.get(name) ?? "";

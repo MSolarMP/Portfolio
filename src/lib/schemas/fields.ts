@@ -3,7 +3,7 @@ import { z } from "zod";
 /** Field builders shared by the admin entity schemas. */
 
 /** Lowercase words joined by single hyphens, e.g. "trail-running". */
-export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** "Trail Running & Hiking!" → "trail-running-hiking". Used to suggest a slug from the title. */
 export function slugify(text: string) {

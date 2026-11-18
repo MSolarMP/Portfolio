@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FormField, fieldClass } from "@/components/admin/form-field";
+import { createdState, useEditorForm } from "@/components/admin/use-editor-form";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { SaveBar } from "@/components/admin/save-bar";
 import { MediaPicker } from "@/components/admin/media-picker";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { QuestKind, Rarity, Status } from "@/generated/prisma/enums";
-import { type ActionState, idle } from "@/lib/action-state";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
 import { parseStack, slugify, STACK_MAX } from "@/lib/schemas/fields";
 import { QUEST_SECTIONS, type QuestSection, SUMMARY_MAX } from "@/lib/schemas/quest";
@@ -36,7 +36,7 @@ export type Values = {
   featured: boolean;
 };
 
-export type ChapterOption = { id: string; numeral: string; role: string; company: string };
+type ChapterOption = { id: string; numeral: string; role: string; company: string };
 
 export const blankValues: Values = {
   title: "",
@@ -74,11 +74,6 @@ function normalise(v: Values): Values {
   };
 }
 
-const same = (a: Values, b: Values) =>
-  JSON.stringify(normalise(a)) === JSON.stringify(normalise(b));
-
-const created: ActionState = { status: "success", message: "Created.", at: 0 };
-
 const card = "bg-vellum border-rule flex flex-col gap-4 rounded border px-4 py-5 sm:px-5";
 
 /** Create (no `id`) or edit (with `id`) a quest. Same pattern as the side quest form. */
@@ -96,31 +91,26 @@ export function QuestForm({
   media: MediaOption[];
   justCreated?: boolean;
 }) {
-  const [saved, setSaved] = useState(initial);
-  const [values, setValues] = useState(initial);
+  const {
+    values,
+    saved,
+    setValues,
+    set,
+    dirty,
+    state,
+    formAction,
+    pending,
+    errors,
+    revert,
+    revision,
+  } = useEditorForm<Values>({
+    initial,
+    normalise: normalise,
+    submit: (prev, formData) =>
+      id ? updateQuest(id, prev, formData) : createQuest(prev, formData),
+    initialState: justCreated ? createdState() : undefined,
+  });
   const [slugTouched, setSlugTouched] = useState(Boolean(id));
-  // Bumped on Revert to remount the rich-text editors with the saved content.
-  const [revision, setRevision] = useState(0);
-  const dirty = !same(values, saved);
-
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = id ? await updateQuest(id, prev, formData) : await createQuest(prev, formData);
-      if (result.status === "success") {
-        const stored = normalise(values);
-        setSaved(stored);
-        setValues(stored);
-      }
-      return result;
-    },
-    justCreated ? created : idle,
-  );
-
-  const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
-
-  function set<K extends keyof Values>(key: K, value: Values[K]) {
-    setValues((v) => ({ ...v, [key]: value }));
-  }
 
   const stackCount = parseStack(values.stack).length;
 
@@ -378,10 +368,7 @@ export function QuestForm({
         dirty={dirty}
         pending={pending}
         state={state}
-        onRevert={() => {
-          setValues(saved);
-          setRevision((r) => r + 1);
-        }}
+        onRevert={revert}
       />
     </form>
   );

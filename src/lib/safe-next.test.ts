@@ -8,8 +8,8 @@ describe("safeNext", () => {
   });
 
   it("falls back when missing", () => {
-    expect(safeNext(null)).toBe("/enter");
-    expect(safeNext("")).toBe("/enter");
+    expect(safeNext(null)).toBe("/admin");
+    expect(safeNext("")).toBe("/admin");
   });
 
   it.each([
@@ -21,6 +21,6 @@ describe("safeNext", () => {
     "/admin\n",
     "javascript:alert(1)",
   ])("rejects %j", (raw) => {
-    expect(safeNext(raw)).toBe("/enter");
+    expect(safeNext(raw)).toBe("/admin");
   });
 });

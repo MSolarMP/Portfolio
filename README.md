@@ -4,6 +4,8 @@ A full stack portfolio built as a working product rather than a static page. Eve
 
 **Live:** [mattcreates.co.za](https://mattcreates.co.za)
 
+**Status:** the admin portal is complete and in use; the public site that reads from it is being built next.
+
 ## Stack
 
 | Layer           | Choice                                                                   |
@@ -11,15 +13,15 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Framework       | Next.js (App Router, Cache Components) · TypeScript                      |
 | Styling         | Tailwind CSS · hand-built components (no UI library)                     |
 | Database        | PostgreSQL on Supabase · Prisma ORM                                      |
-| Auth            | Better Auth — owner-only sign-in (magic link, GitHub)                    |
+| Auth            | Better Auth — owner-only magic-link sign-in                              |
 | Validation      | Zod — one schema per entity, shared by forms and server actions          |
 | Rich text       | Tiptap, stored as allow-listed JSON                                      |
 | Media           | Supabase Storage (AVIF/WebP variants made with sharp, metadata stripped) |
-| Background jobs | Next.js `after()`; a durable queue arrives with SMS                      |
+| Background jobs | None yet; a durable queue (Inngest) arrives with SMS alerts              |
 | Email / SMS     | Resend · SMS Portal                                                      |
 | Rate limiting   | Upstash Redis (hashed keys; fails open)                                  |
 | Edge            | Vercel hosting · Cloudflare DNS, Turnstile                               |
-| Testing         | Vitest · GitHub Actions                                                  |
+| Testing         | Vitest (incl. an access test over every admin action) · GitHub Actions   |
 
 ## Admin portal
 
@@ -55,7 +57,7 @@ npm run db:seed           # load starter content
 npm run dev
 ```
 
-To sign in to the admin (`/admin`), set `BETTER_AUTH_SECRET` and put your email in `ADMIN_EMAILS`. Without `RESEND_API_KEY`, the magic link is printed in the terminal instead of emailed. Only allow-listed emails can sign in — visitors never need an account.
+To sign in to the admin (`/admin`), set `BETTER_AUTH_SECRET` and put your email in `ADMIN_EMAILS`. Without `RESEND_API_KEY`, the magic link is printed in the terminal instead of emailed. Image uploads need the `SUPABASE_*` storage variables; rate limiting uses `UPSTASH_*` and is skipped when they are unset. Only allow-listed emails can sign in — visitors never need an account.
 
 | Script                                | What it does                                        |
 | ------------------------------------- | --------------------------------------------------- |
@@ -93,19 +95,19 @@ One Next.js app. Public pages render from the database inside cached functions; 
 
 ### Key decisions
 
-| Decision                                                                          | Why                                                                                                                                                    |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| One app (modular monolith), not separate admin/API services                       | One developer, low traffic: one deploy and one auth system. Split when a second app exists.                                                            |
-| Supabase as plain Postgres, accessed only through Prisma                          | One typed data path. The public Data API is locked (RLS on, no policies, privileges revoked).                                                          |
-| Sign-in is for the owner only (Better Auth: magic link, GitHub; email allow-list) | Visitors never need an account, so no personal data is collected. No passwords stored. Checked in the proxy, the admin layout and every server action. |
-| No UI component library; admin components written in plain React + Tailwind       | Every component is understood and owned; native `<dialog>` and form elements cover accessibility.                                                      |
-| Rich text stored as Tiptap JSON and cleaned against an allow-list on save         | The public renderer only ever sees known nodes and safe links, so no raw HTML is ever injected.                                                        |
-| Database-driven content with tag-based caching                                    | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                               |
-| Media in Supabase Storage: private originals, public resized copies               | Same project as the database and well within the free plan for a few display images; metadata (incl. GPS) stripped before anything is public.          |
-| `after()` for background work; a queue only once SMS needs retries                | No infrastructure before a workload needs it.                                                                                                          |
-| Migrations run during production builds only                                      | Schema and code ship together; previews never change the live schema. Migrations stay additive.                                                        |
-| Functions pinned to `dub1`, next to the database                                  | Saves ~75 ms on every database round trip.                                                                                                             |
-| One shared database while pre-launch                                              | No real data yet; revisit before launch.                                                                                                               |
+| Decision                                                                    | Why                                                                                                                                                    |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| One app (modular monolith), not separate admin/API services                 | One developer, low traffic: one deploy and one auth system. Split when a second app exists.                                                            |
+| Supabase as plain Postgres, accessed only through Prisma                    | One typed data path. The public Data API is locked (RLS on, no policies, privileges revoked).                                                          |
+| Sign-in is for the owner only (Better Auth magic link; email allow-list)    | Visitors never need an account, so no personal data is collected. No passwords stored. Checked in the proxy, the admin layout and every server action. |
+| No UI component library; admin components written in plain React + Tailwind | Every component is understood and owned; native `<dialog>` and form elements cover accessibility.                                                      |
+| Rich text stored as Tiptap JSON and cleaned against an allow-list on save   | The public renderer only ever sees known nodes and safe links, so no raw HTML is ever injected.                                                        |
+| Database-driven content with tag-based caching                              | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                               |
+| Media in Supabase Storage: private originals, public resized copies         | Same project as the database and well within the free plan for a few display images; metadata (incl. GPS) stripped before anything is public.          |
+| No background-job service yet; a queue only once SMS needs retries          | No infrastructure before a workload needs it.                                                                                                          |
+| Migrations run during production builds only                                | Schema and code ship together; previews never change the live schema. Migrations stay additive.                                                        |
+| Functions pinned to `dub1`, next to the database                            | Saves ~75 ms on every database round trip.                                                                                                             |
+| One shared database while pre-launch                                        | No real data yet; revisit before launch.                                                                                                               |
 
 ## Licence
 

@@ -21,7 +21,7 @@ export const settingsSchema = z.object({
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
-export type SettingKey = keyof Settings;
+type SettingKey = keyof Settings;
 
 export const SETTING_DEFAULTS: Settings = {
   openToWork: false,

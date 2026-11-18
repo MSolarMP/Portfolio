@@ -1,5 +1,5 @@
 import "server-only";
-import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { captcha, magicLink } from "better-auth/plugins";
@@ -14,18 +14,6 @@ import { magicLinkEmail, sendEmail } from "./email";
  */
 export const adminEmails = parseAdminEmails(process.env.ADMIN_EMAILS);
 const isKeeper = (email: string) => isAdminEmail(email, adminEmails);
-
-// GitHub is only switched on once its credentials exist,
-// so the app runs locally before the OAuth app is created.
-const socialProviders: BetterAuthOptions["socialProviders"] = {};
-if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-  socialProviders.github = {
-    clientId: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  };
-}
-
-export const enabledProviders = { github: Boolean(socialProviders.github) };
 
 const turnstile = process.env.TURNSTILE_SECRET_KEY
   ? [
@@ -42,13 +30,6 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: prismaAdapter(db, { provider: "postgresql" }),
-  socialProviders,
-  // Refused or failed OAuth sign-ins land back on the gate with ?error=… instead of Better Auth's page.
-  onAPIError: { errorURL: "/sign-in" },
-  account: {
-    // Lets the Keeper use magic link or GitHub interchangeably with the same email.
-    accountLinking: { enabled: true, trustedProviders: ["github"] },
-  },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // refresh daily while in use
@@ -90,5 +71,3 @@ export const auth = betterAuth({
     nextCookies(), // must stay last: lets server actions set auth cookies
   ],
 });
-
-export type Session = typeof auth.$Infer.Session;

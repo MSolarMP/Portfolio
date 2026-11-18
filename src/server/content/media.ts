@@ -11,7 +11,7 @@ function readVariants(json: unknown): VariantMap {
 }
 
 /** The URL of the widest variant of `format` that is at most `maxWidth` (or the smallest one). */
-export function variantUrl(variants: VariantMap, format: VariantFormat, maxWidth: number) {
+function variantUrl(variants: VariantMap, format: VariantFormat, maxWidth: number) {
   const entries = Object.entries(variants[format] ?? {})
     .map(([w, path]) => [Number(w), path] as const)
     .sort((a, b) => a[0] - b[0]);

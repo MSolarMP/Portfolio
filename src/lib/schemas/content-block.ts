@@ -13,8 +13,6 @@ export const contentBlockTextSchema = z.object({
     .max(CONTENT_TEXT_MAX, `Keep it under ${CONTENT_TEXT_MAX} characters.`),
 });
 
-export type ContentBlockTextInput = z.infer<typeof contentBlockTextSchema>;
-
 /** Editing one rich-text ContentBlock: the editor's Tiptap JSON, cleaned by the allow-list. */
 export const contentBlockRichSchema = z.object({
   key: z.string().min(1).max(120),

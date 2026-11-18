@@ -2,7 +2,7 @@ import "server-only";
 import sharp from "sharp";
 
 /** Widths the site picks from with `srcset`. Images are never enlarged. */
-export const VARIANT_WIDTHS = [640, 1280, 1920] as const;
+const VARIANT_WIDTHS = [640, 1280, 1920] as const;
 export const VARIANT_FORMATS = ["avif", "webp"] as const;
 export type VariantFormat = (typeof VARIANT_FORMATS)[number];
 

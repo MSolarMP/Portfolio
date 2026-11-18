@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
+import { PageHeader } from "@/components/admin/page-header";
 import { excerpt, formatDate } from "@/lib/format";
 import { countMessages, listMessages, type MessageView } from "@/server/content/messages";
 
@@ -10,11 +11,11 @@ export const metadata: Metadata = { title: "Ravens" };
 export default function MessagesAdmin({ searchParams }: PageProps<"/admin/messages">) {
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <div>
-        <span className="text-ink-faded text-sm">Inbox</span>
-        <h1 className="font-display text-3xl font-bold">Ravens (messages)</h1>
-        <p className="text-ink-faded">Messages sent through the contact form on the site.</p>
-      </div>
+      <PageHeader
+        eyebrow="Inbox"
+        title="Ravens (messages)"
+        description="Messages sent through the contact form on the site."
+      />
 
       <Suspense fallback={<ContentSkeleton label="Loading messages…" />}>
         <Inbox searchParams={searchParams} />

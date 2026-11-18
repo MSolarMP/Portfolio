@@ -1,11 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
 import { FormField, fieldClass } from "@/components/admin/form-field";
+import { createdState, useEditorForm } from "@/components/admin/use-editor-form";
 import { SaveBar } from "@/components/admin/save-bar";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { Status } from "@/generated/prisma/enums";
-import { type ActionState, idle } from "@/lib/action-state";
 import { QUOTE_MAX } from "@/lib/schemas/commendation";
 import { createCommendation, updateCommendation } from "./actions";
 
@@ -43,11 +42,6 @@ function normalise(v: Values): Values {
   };
 }
 
-const same = (a: Values, b: Values) =>
-  JSON.stringify(normalise(a)) === JSON.stringify(normalise(b));
-
-const created: ActionState = { status: "success", message: "Created.", at: 0 };
-
 const card = "bg-vellum border-rule flex flex-col gap-4 rounded border px-4 py-5 sm:px-5";
 
 // Today in the Keeper's time zone, as the date picker's upper limit.
@@ -64,30 +58,13 @@ export function CommendationForm({
   initial: Values;
   justCreated?: boolean;
 }) {
-  const [saved, setSaved] = useState(initial);
-  const [values, setValues] = useState(initial);
-  const dirty = !same(values, saved);
-
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = id
-        ? await updateCommendation(id, prev, formData)
-        : await createCommendation(prev, formData);
-      if (result.status === "success") {
-        const stored = normalise(values);
-        setSaved(stored);
-        setValues(stored);
-      }
-      return result;
-    },
-    justCreated ? created : idle,
-  );
-
-  const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
-
-  function set<K extends keyof Values>(key: K, value: Values[K]) {
-    setValues((v) => ({ ...v, [key]: value }));
-  }
+  const { values, set, dirty, state, formAction, pending, errors, revert } = useEditorForm<Values>({
+    initial,
+    normalise: normalise,
+    submit: (prev, formData) =>
+      id ? updateCommendation(id, prev, formData) : createCommendation(prev, formData),
+    initialState: justCreated ? createdState() : undefined,
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -210,7 +187,7 @@ export function CommendationForm({
         dirty={dirty}
         pending={pending}
         state={state}
-        onRevert={() => setValues(saved)}
+        onRevert={revert}
       />
     </form>
   );

@@ -22,8 +22,6 @@ export const skillSchema = z.object({
   headline: z.boolean(),
 });
 
-export type SkillInput = z.infer<typeof skillSchema>;
-
 export function skillFormValues(formData: FormData) {
   return {
     name: formData.get("name") ?? "",

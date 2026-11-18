@@ -19,8 +19,6 @@ export const mediaDetailsSchema = z.object({
   caption: optionalText(300),
 });
 
-export type MediaDetails = z.infer<typeof mediaDetailsSchema>;
-
 export function mediaDetailsFormValues(formData: FormData) {
   return {
     alt: formData.get("alt") ?? "",

@@ -37,7 +37,7 @@ export function hashKey(value: string) {
   return createHash("sha256").update(value.trim().toLowerCase()).digest("hex").slice(0, 32);
 }
 
-export type LimitResult = { ok: true } | { ok: false; retryAfterSeconds: number };
+type LimitResult = { ok: true } | { ok: false; retryAfterSeconds: number };
 
 let warned = false;
 

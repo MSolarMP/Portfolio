@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { blankValues, ChapterForm } from "../chapter-form";
+import { PageHeader } from "@/components/admin/page-header";
 
 export const metadata: Metadata = { title: "New chapter" };
 
 export default function NewChapter() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <div>
-        <Link href="/admin/chronicle" className="text-sm">
-          ← Chronicle
-        </Link>
-        <h1 className="font-display text-3xl font-bold">New chapter</h1>
-        <p className="text-ink-faded">
-          It goes to the top of the timeline. Drag it elsewhere later.
-        </p>
-      </div>
+      <PageHeader
+        back={{ href: "/admin/chronicle", label: "Chronicle" }}
+        title="New chapter"
+        description="It goes to the top of the timeline. Drag it elsewhere later."
+      />
       <ChapterForm initial={blankValues} />
     </div>
   );

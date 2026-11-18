@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
+import { PageHeader } from "@/components/admin/page-header";
 import { dateToMonth } from "@/lib/schemas/chapter";
 import { listChapters } from "@/server/content/chapters";
 import { ChronicleTable } from "./chronicle-table";
@@ -11,21 +11,12 @@ export const metadata: Metadata = { title: "Chronicle" };
 export default function ChronicleAdmin() {
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <span className="text-ink-faded text-sm">Content</span>
-          <h1 className="font-display text-3xl font-bold">Chronicle (experience)</h1>
-          <p className="text-ink-faded">
-            Your jobs, one chapter each. The order here is the order of the timeline.
-          </p>
-        </div>
-        <Link
-          href="/admin/chronicle/new"
-          className="bg-oxblood text-seal-text hover:bg-oxblood-dark hover:text-seal-text inline-flex min-h-11 items-center rounded px-4 font-sans font-bold"
-        >
-          New chapter
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Chronicle (experience)"
+        description="Your jobs, one chapter each. The order here is the order of the timeline."
+        action={{ href: "/admin/chronicle/new", label: "New chapter" }}
+      />
 
       <Suspense fallback={<ContentSkeleton label="Loading chapters…" />}>
         <ChapterList />

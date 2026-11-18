@@ -1,14 +1,14 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/admin/button";
+import { createdState, useEditorForm } from "@/components/admin/use-editor-form";
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { SaveBar } from "@/components/admin/save-bar";
 import { MediaPicker } from "@/components/admin/media-picker";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { Status } from "@/generated/prisma/enums";
-import { type ActionState, idle } from "@/lib/action-state";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
 import { slugify } from "@/lib/schemas/fields";
 import { type Stat, STATS_MAX, TAGLINE_MAX } from "@/lib/schemas/interest";
@@ -56,11 +56,6 @@ function normalise(v: Values): Values {
   };
 }
 
-const created: ActionState = { status: "success", message: "Created.", at: 0 };
-
-const same = (a: Values, b: Values) =>
-  JSON.stringify(normalise(a)) === JSON.stringify(normalise(b));
-
 /**
  * Create (no `id`) or edit (with `id`) a side quest. Fields are controlled so a
  * failed save keeps what you typed, and so the slug can follow the title until you edit it.
@@ -77,35 +72,27 @@ export function SideQuestForm({
   media: MediaOption[];
   justCreated?: boolean;
 }) {
-  const [saved, setSaved] = useState(initial);
-  const [values, setValues] = useState(initial);
-  // Bumped on Revert to remount the rich-text editor with the saved content.
-  const [revision, setRevision] = useState(0);
+  const {
+    values,
+    saved,
+    setValues,
+    set,
+    dirty,
+    state,
+    formAction,
+    pending,
+    errors,
+    revert,
+    revision,
+  } = useEditorForm<Values>({
+    initial,
+    normalise: normalise,
+    submit: (prev, formData) =>
+      id ? updateInterest(id, prev, formData) : createInterest(prev, formData),
+    initialState: justCreated ? createdState() : undefined,
+  });
   // New side quests: the slug tracks the title until the Keeper types in the slug box.
   const [slugTouched, setSlugTouched] = useState(Boolean(id));
-  const dirty = !same(values, saved);
-
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      // Create redirects to the edit page on success, so only edits come back with "success".
-      const result = id
-        ? await updateInterest(id, prev, formData)
-        : await createInterest(prev, formData);
-      if (result.status === "success") {
-        const stored = normalise(values);
-        setSaved(stored);
-        setValues(stored);
-      }
-      return result;
-    },
-    justCreated ? created : idle,
-  );
-
-  const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
-
-  function set<K extends keyof Values>(key: K, value: Values[K]) {
-    setValues((v) => ({ ...v, [key]: value }));
-  }
 
   function setStat(index: number, patch: Partial<Stat>) {
     set(
@@ -295,10 +282,7 @@ export function SideQuestForm({
         dirty={dirty}
         pending={pending}
         state={state}
-        onRevert={() => {
-          setValues(saved);
-          setRevision((r) => r + 1);
-        }}
+        onRevert={revert}
       />
     </form>
   );
