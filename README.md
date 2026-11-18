@@ -31,6 +31,7 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Side quests   | Hobbies: cover image, tagline, attribute, stats and story                                            |
 | Chronicle     | Work history: dates, summary, ordered highlights, stack                                              |
 | Skills        | The skill tree, by category, edited inline                                                           |
+| Ravens        | Contact messages: unread/archived, reply in your own mail app                                        |
 | Commendations | LinkedIn recommendations, each linking back to the original                                          |
 | Media vault   | Display images (profile photo, screenshots, diagrams): AVIF/WebP copies, metadata stripped, alt text |
 

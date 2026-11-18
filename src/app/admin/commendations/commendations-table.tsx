@@ -4,7 +4,7 @@ import Link from "next/link";
 import { type Column, DataTable } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { Status } from "@/generated/prisma/enums";
-import { formatDate } from "@/lib/format";
+import { excerpt, formatDate } from "@/lib/format";
 import { reorderCommendations } from "./actions";
 
 export type Row = {
@@ -16,8 +16,6 @@ export type Row = {
   status: Status;
   featured: boolean;
 };
-
-const excerpt = (text: string) => (text.length > 110 ? `${text.slice(0, 110).trimEnd()}…` : text);
 
 const columns: Column<Row>[] = [
   {

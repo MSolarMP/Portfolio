@@ -22,7 +22,7 @@ const groups: { title: string; items: Item[] }[] = [
   {
     title: "Inbox",
     items: [
-      { label: "Ravens (messages)", href: "/admin/messages", ready: false },
+      { label: "Ravens (messages)", href: "/admin/messages", ready: true },
       { label: "Delivery log", href: "/admin/delivery-log", ready: false },
     ],
   },

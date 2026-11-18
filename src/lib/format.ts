@@ -18,3 +18,23 @@ export function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+/** The first `max` characters of `text` on one line, ending in "…" if cut. */
+export function excerpt(text: string, max = 110) {
+  const flat = text.replace(/\s+/g, " ").trim();
+  return flat.length > max ? `${flat.slice(0, max).trimEnd()}…` : flat;
+}
+
+/** "18 Nov 2026, 14:05" in South African time. */
+export function formatDateTime(value: Date | string) {
+  return dateTimeFormat.format(typeof value === "string" ? new Date(value) : value);
+}
+
+const dateTimeFormat = new Intl.DateTimeFormat("en-ZA", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Africa/Johannesburg",
+});
