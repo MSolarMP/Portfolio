@@ -45,14 +45,49 @@ export function findPublishedFeatured() {
   return db.quest.findMany({
     where: { status: "PUBLISHED", featured: true },
     orderBy: displayOrder,
+    select: publicCard,
+  });
+}
+
+const publicCard = {
+  slug: true,
+  title: true,
+  client: true,
+  kind: true,
+  rarity: true,
+  summary: true,
+  stack: true,
+  diagram: { select: publicImageSelect },
+} as const;
+
+/** Published quests for the board, in display order. */
+export function findPublished() {
+  return db.quest.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: displayOrder,
+    select: publicCard,
+  });
+}
+
+/** One published quest with everything the case study page shows. */
+export function findPublishedBySlug(slug: string) {
+  return db.quest.findFirst({
+    where: { slug, status: "PUBLISHED" },
     select: {
-      slug: true,
-      title: true,
-      client: true,
-      rarity: true,
-      summary: true,
-      stack: true,
-      diagram: { select: publicImageSelect },
+      ...publicCard,
+      role: true,
+      repoUrl: true,
+      liveUrl: true,
+      briefing: true,
+      problem: true,
+      constraints: true,
+      approach: true,
+      bossFight: true,
+      outcome: true,
+      loot: true,
+      chapter: {
+        select: { numeral: true, role: true, company: true, startDate: true, endDate: true },
+      },
     },
   });
 }

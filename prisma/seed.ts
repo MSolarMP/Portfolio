@@ -108,6 +108,12 @@ const blocks: { key: string; page: string; label: string; text: string; type?: B
     label: "Introduction",
     text: "Case studies from client work, told without breaking any oaths (NDAs), and personal projects forged in the open.",
   },
+  {
+    key: "quests.empty",
+    page: "quests",
+    label: "Shown when nothing is published",
+    text: "The first tales are still being written.",
+  },
   { key: "chronicle.title", page: "chronicle", label: "Page title", text: "The Chronicle" },
   { key: "contact.title", page: "contact", label: "Page title", text: "Send a Raven" },
   {
@@ -115,6 +121,31 @@ const blocks: { key: string; page: string; label: string; text: string; type?: B
     page: "contact",
     label: "Introduction",
     text: "Roles, freelance work or just a hello. Write your letter below and seal it.",
+  },
+  {
+    key: "notfound.eyebrow",
+    page: "notfound",
+    label: "Eyebrow",
+    text: "Error 404 · Uncharted lands",
+  },
+  {
+    key: "notfound.title",
+    page: "notfound",
+    label: "Heading",
+    text: "You have wandered off the map",
+  },
+  {
+    key: "notfound.body",
+    page: "notfound",
+    label: "Message",
+    text: "The page you seek was never written, or has been moved to another chapter. Even seasoned adventurers take a wrong turn.",
+  },
+  { key: "notfound.home", page: "notfound", label: "Home button", text: "Return to the ledger" },
+  {
+    key: "notfound.board",
+    page: "notfound",
+    label: "Quests button",
+    text: "Browse the quest board",
   },
   { key: "global.site.name", page: "global", label: "Site name", text: "Matthew Pearce" },
   {

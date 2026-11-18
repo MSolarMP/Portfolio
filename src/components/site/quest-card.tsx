@@ -1,25 +1,9 @@
 import Link from "next/link";
-import type { Rarity } from "@/generated/prisma/client";
-import type { PublicImage } from "@/modules/media";
+import type { QuestCard as QuestCardData } from "@/modules/quests";
+import { QUEST_KIND, RARITY } from "./quest-meta";
 import { SiteImage } from "./site-image";
 
-const rarity: Record<Rarity, { seal: string; label: string; className: string }> = {
-  LEGENDARY: { seal: "LEG.", label: "Legendary", className: "" },
-  EPIC: { seal: "EPIC", label: "Epic", className: "bg-leather!" },
-  RARE: { seal: "RARE", label: "Rare", className: "bg-moss!" },
-};
-
-export type QuestCardData = {
-  slug: string;
-  title: string;
-  client: string | null;
-  rarity: Rarity;
-  summary: string;
-  stack: string[];
-  image: PublicImage | null;
-};
-
-/** A quest on the board: image, client, rarity seal, title, summary, stack, link to the tale. */
+/** A quest on the board: diagram, client, rarity seal, title, summary, stack, link to the tale. */
 export function QuestCard({
   quest,
   headingLevel: H = "h3",
@@ -27,9 +11,9 @@ export function QuestCard({
   quest: QuestCardData;
   headingLevel?: "h2" | "h3";
 }) {
-  const r = rarity[quest.rarity];
+  const r = RARITY[quest.rarity];
   return (
-    <article className="ledger-card gem flex flex-col gap-3.5 p-4.5">
+    <article className="ledger-card gem flex h-full flex-col gap-3.5 p-4.5">
       {quest.image && (
         <div className="bg-aged border-rule overflow-hidden border">
           <SiteImage
@@ -40,7 +24,9 @@ export function QuestCard({
         </div>
       )}
       <div className="flex items-center justify-between gap-3">
-        <span className="label-caps">{quest.client}</span>
+        <span className="label-caps">
+          {[quest.client, QUEST_KIND[quest.kind]].filter(Boolean).join(" · ")}
+        </span>
         <span
           className={`wax-seal h-13.5 w-13.5 text-[10px] tracking-wider ${r.className}`}
           aria-hidden="true"
@@ -51,18 +37,7 @@ export function QuestCard({
       </div>
       <H className="font-display text-[1.625rem] leading-tight font-bold">{quest.title}</H>
       <p className="text-ink-faded text-[1.0625rem]">{quest.summary}</p>
-      {quest.stack.length > 0 && (
-        <ul aria-label="Stack" className="flex flex-wrap gap-1.5">
-          {quest.stack.map((tech) => (
-            <li
-              key={tech}
-              className="border-rule bg-parchment text-leather border px-2.5 py-0.5 font-sans text-sm"
-            >
-              {tech}
-            </li>
-          ))}
-        </ul>
-      )}
+      {quest.stack.length > 0 && <StackList stack={quest.stack} />}
       <Link
         href={`/quests/${quest.slug}`}
         className="font-display mt-auto inline-flex min-h-11 items-center self-start text-[15px] font-bold tracking-wide"
@@ -71,5 +46,21 @@ export function QuestCard({
         <span aria-hidden="true">&nbsp;→</span>
       </Link>
     </article>
+  );
+}
+
+/** Technology chips ("Spells"). */
+export function StackList({ stack }: { stack: string[] }) {
+  return (
+    <ul aria-label="Stack" className="flex flex-wrap gap-1.5">
+      {stack.map((tech) => (
+        <li
+          key={tech}
+          className="border-rule bg-parchment text-leather border px-2.5 py-0.5 font-sans text-sm"
+        >
+          {tech}
+        </li>
+      ))}
+    </ul>
   );
 }

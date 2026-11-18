@@ -4,24 +4,38 @@ A full stack portfolio built as a working product rather than a static page. Eve
 
 **Live:** [mattcreates.co.za](https://mattcreates.co.za)
 
-**Status:** the admin portal is complete and in use; the public site that reads from it is being built next.
+**Status:** the admin portal is complete. The public site is being built on top of it: the themed layout, Home, Side Quests, the Quest Board, case study pages and a custom 404 are done; the Chronicle, contact form and SEO are next.
 
 ## Stack
 
-| Layer           | Choice                                                                   |
-| --------------- | ------------------------------------------------------------------------ |
-| Framework       | Next.js (App Router, Cache Components) · TypeScript                      |
-| Styling         | Tailwind CSS · hand-built components (no UI library)                     |
-| Database        | PostgreSQL on Supabase · Prisma ORM                                      |
-| Auth            | Better Auth — owner-only magic-link sign-in                              |
-| Validation      | Zod — one schema per module, shared by forms, server actions and the API |
-| Rich text       | Tiptap, stored as allow-listed JSON                                      |
-| Media           | Supabase Storage (AVIF/WebP variants made with sharp, metadata stripped) |
-| Background jobs | None yet; a durable queue (Inngest) arrives with SMS alerts              |
-| Email / SMS     | Resend · SMS Portal                                                      |
-| Rate limiting   | Upstash Redis (hashed keys; fails open)                                  |
-| Edge            | Vercel hosting · Cloudflare DNS, Turnstile                               |
-| Testing         | Vitest (incl. an access test over every admin action) · GitHub Actions   |
+| Layer           | Choice                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Framework       | Next.js (App Router, Cache Components) · TypeScript                                                                     |
+| Styling         | Tailwind CSS · hand-built components (no UI library)                                                                    |
+| Database        | PostgreSQL on Supabase · Prisma ORM                                                                                     |
+| Auth            | Better Auth — owner-only magic-link sign-in                                                                             |
+| Validation      | Zod — one schema per module, shared by forms, server actions and the API                                                |
+| Rich text       | Tiptap, stored as allow-listed JSON                                                                                     |
+| Media           | Supabase Storage (AVIF/WebP variants made with sharp, metadata stripped)                                                |
+| Background jobs | None yet; a durable queue (Inngest) arrives with SMS alerts                                                             |
+| Email / SMS     | Resend · SMS Portal                                                                                                     |
+| Rate limiting   | Upstash Redis (hashed keys; fails open)                                                                                 |
+| Edge            | Vercel hosting · Cloudflare DNS, Turnstile                                                                              |
+| Testing         | Vitest (incl. access sweeps over every server action and API route) · GitHub Actions (builds against a seeded Postgres) |
+
+## Public site
+
+Themed as an "Adventurer's Ledger": parchment, leather, wax seals, with a **Plain view** toggle in the header that strips the decoration for a quick skim. Motion respects `prefers-reduced-motion`.
+
+| Page                  | What it shows                                                                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` Home              | Hero, character sheet, experience bar (from the work history), skills by category, featured case studies, recent jobs, contact call to action |
+| `/about` Side Quests  | Hobbies with covers, stats and stories; filter by hobby                                                                                       |
+| `/quests` Quest Board | Every published case study; filter by type and technology                                                                                     |
+| `/quests/[slug]`      | One case study: briefing, problem, constraints, approach + diagram, hardest problem, outcome, lessons                                         |
+| 404                   | A themed "off the map" page                                                                                                                   |
+
+Pages are pre-rendered from the database and refresh when the content changes in the admin.
 
 ## Admin portal
 
@@ -45,7 +59,14 @@ Every save follows the same path: server action (check the owner's session → v
 
 Public pages call module services directly; the reads run inside `'use cache'` functions tagged with `cacheTag()`, so visitors get pre-rendered pages. A save expires only the affected tags (`src/lib/cache.ts`, tag names in `src/lib/cache-tags.ts`).
 
-The same services back a read-only REST API for outside clients, e.g. `GET /api/v1/side-quests` (published content as JSON, CDN-cached; errors are RFC 9457 `application/problem+json` with a request id).
+The same services back a read-only REST API for outside clients (published content as JSON, CDN-cached; errors are RFC 9457 `application/problem+json` with a request id):
+
+| Endpoint                       | Returns                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| `GET /api/v1/quests`           | Published case studies as cards (`?status=all` for the owner: drafts too)     |
+| `GET /api/v1/quests/{slug}`    | One case study: every section as Tiptap JSON, chapter, diagram, previous/next |
+| `GET /api/v1/side-quests`      | Published side quests (`?status=all` for the owner)                           |
+| `GET /api/v1/side-quests/{id}` | One side quest                                                                |
 
 ## Getting started
 

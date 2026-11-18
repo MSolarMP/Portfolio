@@ -12,28 +12,52 @@ export const SUMMARY_MAX = 300;
 
 /**
  * The case-study sections, in reading order. Each is a rich-text (Tiptap JSON) column on `Quest`.
- * Admin labels are plain, with the themed name in brackets (see the design vocabulary).
+ * `label`/`hint` are for the admin (plain, themed name in brackets); `title` is the public
+ * heading on the case study page.
  */
 export const QUEST_SECTIONS = [
   {
     key: "briefing",
+    title: "The briefing",
     label: "Briefing (context)",
     hint: "Who the client was and what they needed.",
   },
-  { key: "problem", label: "Problem", hint: "What was broken, slow or missing." },
+  {
+    key: "problem",
+    title: "The problem",
+    label: "Problem",
+    hint: "What was broken, slow or missing.",
+  },
   {
     key: "constraints",
+    title: "Constraints",
     label: "Constraints",
     hint: "Deadlines, legacy systems, team size, budget.",
   },
-  { key: "approach", label: "Approach", hint: "What you built and why, step by step." },
+  {
+    key: "approach",
+    title: "The approach",
+    label: "Approach",
+    hint: "What you built and why, step by step.",
+  },
   {
     key: "bossFight",
+    title: "Boss fight",
     label: "Boss fight (hardest problem)",
     hint: "The hardest problem and how you beat it.",
   },
-  { key: "outcome", label: "Outcome", hint: "Results, numbers, what changed for the client." },
-  { key: "loot", label: "Loot (lessons learned)", hint: "What you'd take to the next quest." },
+  {
+    key: "outcome",
+    title: "Outcome",
+    label: "Outcome",
+    hint: "Results, numbers, what changed for the client.",
+  },
+  {
+    key: "loot",
+    title: "Loot",
+    label: "Loot (lessons learned)",
+    hint: "What you'd take to the next quest.",
+  },
 ] as const;
 
 export type QuestSection = (typeof QUEST_SECTIONS)[number]["key"];

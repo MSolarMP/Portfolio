@@ -38,14 +38,72 @@ export async function getQuest(id: string) {
   return { ...row, ...sections };
 }
 
+type CardRow = Awaited<ReturnType<typeof repo.findPublished>>[number];
+
+/** A quest as a card: the diagram becomes ready-to-use image URLs. */
+function toCard({ diagram, ...quest }: CardRow) {
+  return { ...quest, image: toPublicImage(diagram) };
+}
+export type QuestCard = ReturnType<typeof toCard>;
+
 /** Public: every published quest marked featured, in display order. */
 export async function getFeaturedQuests() {
   "use cache";
   cacheLife("max");
   cacheTag(tags.quests, tags.media);
-  const rows = await repo.findPublishedFeatured();
-  return rows.map(({ diagram, ...quest }) => ({ ...quest, image: toPublicImage(diagram) }));
+  return (await repo.findPublishedFeatured()).map(toCard);
 }
+
+/** Public: every published quest, in display order (the Quest Board). */
+export async function listPublishedQuests() {
+  "use cache";
+  cacheLife("max");
+  cacheTag(tags.quests, tags.media);
+  return (await repo.findPublished()).map(toCard);
+}
+
+/** The cached read behind `getPublishedQuest`; null when there's no such published quest. */
+async function findPublishedQuest(slug: string) {
+  "use cache";
+  cacheLife("max");
+  cacheTag(tags.quest(slug), tags.quests, tags.chronicle, tags.media);
+  const row = await repo.findPublishedBySlug(slug);
+  if (!row) return null;
+  const { diagram, chapter, ...quest } = row;
+  const sections = QUEST_SECTIONS.map((s) => ({
+    key: s.key,
+    title: s.title,
+    doc: readRichDoc(quest[s.key]),
+  }));
+  return {
+    slug: quest.slug,
+    title: quest.title,
+    client: quest.client,
+    kind: quest.kind,
+    rarity: quest.rarity,
+    summary: quest.summary,
+    stack: quest.stack,
+    role: quest.role,
+    repoUrl: quest.repoUrl,
+    liveUrl: quest.liveUrl,
+    chapter,
+    diagram: toPublicImage(diagram),
+    sections,
+  };
+}
+
+/**
+ * Public: one published quest for its case study page, with the previous and next
+ * quests on the board. Throws NotFoundError for drafts and unknown slugs.
+ */
+export async function getPublishedQuest(slug: string) {
+  const [quest, board] = await Promise.all([findPublishedQuest(slug), listPublishedQuests()]);
+  if (!quest) throw new NotFoundError(RESOURCE);
+  const i = board.findIndex((q) => q.slug === slug);
+  const link = (q: QuestCard | undefined) => (q ? { slug: q.slug, title: q.title } : null);
+  return { ...quest, previous: link(board[i - 1]), next: link(board[i + 1]) };
+}
+export type QuestPublic = Awaited<ReturnType<typeof getPublishedQuest>>;
 
 /** Admin overview: how many quests, and how many are drafts. */
 export function countQuests() {

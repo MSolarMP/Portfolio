@@ -7,8 +7,12 @@ export {
   createQuest,
   deleteQuest,
   getFeaturedQuests,
+  getPublishedQuest,
   getQuest,
+  listPublishedQuests,
   listQuests,
   reorderQuests,
   updateQuest,
+  type QuestCard,
+  type QuestPublic,
 } from "./quests.service";

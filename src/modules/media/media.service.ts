@@ -48,6 +48,7 @@ export type PublicImage = {
   width: number;
   height: number;
   alt: string;
+  caption: string | null;
   blurData: string | null;
 };
 
@@ -58,6 +59,7 @@ export const publicImageSelect = {
   width: true,
   height: true,
   alt: true,
+  caption: true,
   blurData: true,
 } as const;
 
@@ -69,6 +71,7 @@ export function toPublicImage(
     width: number | null;
     height: number | null;
     alt: string | null;
+    caption?: string | null;
     blurData: string | null;
   } | null,
 ): PublicImage | null {
@@ -87,6 +90,7 @@ export function toPublicImage(
     width: media.width,
     height: media.height,
     alt: media.alt ?? "",
+    caption: media.caption ?? null,
     blurData: media.blurData,
   };
 }
