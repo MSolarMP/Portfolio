@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   experimental: {
     // Enables forbidden() / unauthorized() for role checks in the admin.
     authInterrupts: true,
+    // Media uploads go through a server action. The default cap is 1 MB;
+    // Vercel rejects anything over 4.5 MB regardless.
+    serverActions: { bodySizeLimit: "4mb" },
   },
   turbopack: {
     rules: {

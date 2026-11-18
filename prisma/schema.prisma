@@ -186,7 +186,7 @@ model Media {
   id        String     @id @default(cuid())
   kind      MediaKind
   state     MediaState @default(UPLOADING)
-  key       String     @unique /// R2 object key of the original (private prefix)
+  key       String     @unique /// path of the original in the private Storage bucket
   filename  String
   mimeType  String
   bytes     Int?

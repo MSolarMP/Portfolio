@@ -16,7 +16,7 @@ const groups: { title: string; items: Item[] }[] = [
       { label: "Chronicle", href: "/admin/chronicle", ready: true },
       { label: "Skills", href: "/admin/skills", ready: true },
       { label: "Commendations", href: "/admin/commendations", ready: true },
-      { label: "Media vault", href: "/admin/media", ready: false },
+      { label: "Media vault", href: "/admin/media", ready: true },
     ],
   },
   {

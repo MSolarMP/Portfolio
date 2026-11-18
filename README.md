@@ -14,7 +14,7 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Auth            | Better Auth — owner-only sign-in (magic link, GitHub)                   |
 | Validation      | Zod — one schema per entity, shared by forms and server actions         |
 | Rich text       | Tiptap, stored as allow-listed JSON                                     |
-| Media           | Cloudflare R2 (presigned uploads, AVIF/WebP variants, EXIF without GPS) |
+| Media           | Supabase Storage (AVIF/WebP variants made with sharp, EXIF without GPS) |
 | Background jobs | Next.js `after()`; a durable queue arrives with SMS                     |
 | Email / SMS     | Resend · SMS Portal                                                     |
 | Edge            | Vercel hosting · Cloudflare DNS, Turnstile                              |
@@ -32,7 +32,7 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Chronicle     | Work history: dates, summary, ordered highlights, stack                   |
 | Skills        | The skill tree, by category, edited inline                                |
 | Commendations | LinkedIn recommendations, each linking back to the original               |
-| Media vault   | _In progress:_ uploads to R2 with AVIF/WebP variants                      |
+| Media vault   | Image uploads: AVIF/WebP copies at three widths, GPS stripped, alt text   |
 
 Every save follows the same path: check the owner's session → validate with Zod → write with Prisma → refresh only the affected cache tags. Lists can be sorted and reordered by drag or keyboard; rich text is cleaned against an allow-list on the server, so only known formatting and safe links are stored.
 
@@ -81,8 +81,8 @@ flowchart LR
   V[Browser] --> CF[Cloudflare DNS<br/>DNS only]
   CF --> VC[Vercel · Next.js<br/>region dub1]
   VC -->|Prisma · pooled| DB[(Supabase Postgres<br/>eu-west-1)]
-  V -->|presigned upload| R2O[(R2 · private originals)]
-  VC --> R2P[(R2 · public variants)]
+  VC -->|upload · fetch| ST[(Supabase Storage<br/>private originals · public media)]
+  V -->|images via CDN| ST
   VC --> MAIL[Resend]
 ```
 
@@ -98,7 +98,7 @@ One Next.js app. Public pages render from the database inside cached functions; 
 | No UI component library; admin components written in plain React + Tailwind       | Every component is understood and owned; native `<dialog>` and form elements cover accessibility.                                                      |
 | Rich text stored as Tiptap JSON and cleaned against an allow-list on save         | The public renderer only ever sees known nodes and safe links, so no raw HTML is ever injected.                                                        |
 | Database-driven content with tag-based caching                                    | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                               |
-| Media in Cloudflare R2: private originals, public variants                        | 10 GB free with no egress fees; GPS stripped before anything is public.                                                                                |
+| Media in Supabase Storage: private originals, public resized copies               | Same project as the database and within the free plan for a small gallery; GPS stripped before anything is public.                                     |
 | `after()` for background work; a queue only once SMS needs retries                | No infrastructure before a workload needs it.                                                                                                          |
 | Migrations run during production builds only                                      | Schema and code ship together; previews never change the live schema. Migrations stay additive.                                                        |
 | Functions pinned to `dub1`, next to the database                                  | Saves ~75 ms on every database round trip.                                                                                                             |
