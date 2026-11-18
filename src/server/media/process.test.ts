@@ -1,7 +1,6 @@
-import exifr from "exifr";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { processImage, readLore, variantWidths } from "./process";
+import { processImage, variantWidths } from "./process";
 
 /** A JPEG with camera EXIF and a GPS position, like a phone photo. */
 function photo(width: number, height: number) {
@@ -51,26 +50,12 @@ describe("processImage", () => {
 
   it("strips every bit of metadata, including GPS, from the public copies", async () => {
     const input = await photo(700, 400);
-    expect(await exifr.gps(input)).toBeTruthy(); // the original really has a location
+    expect((await sharp(input).metadata()).exif).toBeDefined(); // the original carries EXIF + GPS
 
     const out = await processImage(input);
     for (const v of out.variants) {
       expect((await sharp(v.data).metadata()).exif).toBeUndefined();
-      expect(await exifr.parse(v.data).catch(() => undefined)).toBeUndefined();
     }
-  });
-
-  it("reads camera lore but never the location", async () => {
-    const lore = await readLore(await photo(100, 100));
-    expect(lore).toMatchObject({ camera: "Fujifilm X100V", aperture: "f/2.8", shutter: "1/250s" });
-    expect(JSON.stringify(lore)).not.toMatch(/GPS|latitude|longitude/i);
-  });
-
-  it("returns no lore for images without EXIF", async () => {
-    const png = await sharp({ create: { width: 10, height: 10, channels: 3, background: "#fff" } })
-      .png()
-      .toBuffer();
-    expect(await readLore(png)).toBeNull();
   });
 
   it("rejects files that aren't a supported image", async () => {

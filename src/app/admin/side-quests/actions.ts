@@ -8,6 +8,7 @@ import { tags } from "@/lib/cache-tags";
 import { type InterestInput, interestFormValues, interestSchema } from "@/lib/schemas/interest";
 import { isSameSet, reorderSchema } from "@/lib/schemas/reorder";
 import { requireAdmin } from "@/server/authz";
+import { mediaExists } from "@/server/content/media";
 import { db, jsonOrNull } from "@/server/db";
 
 const LIST = "/admin/side-quests";
@@ -36,6 +37,13 @@ export async function createInterest(_prev: ActionState, formData: FormData): Pr
 
   const parsed = interestSchema.safeParse(interestFormValues(formData));
   if (!parsed.success) return invalid(parsed.error);
+  if (parsed.data.coverId && !(await mediaExists(parsed.data.coverId))) {
+    return {
+      status: "error",
+      message: "Check the highlighted fields.",
+      fieldErrors: { coverId: "That image is no longer in the vault. Pick another." },
+    };
+  }
 
   let id: string;
   try {
@@ -64,6 +72,13 @@ export async function updateInterest(
 
   const parsed = interestSchema.safeParse(interestFormValues(formData));
   if (!parsed.success) return invalid(parsed.error);
+  if (parsed.data.coverId && !(await mediaExists(parsed.data.coverId))) {
+    return {
+      status: "error",
+      message: "Check the highlighted fields.",
+      fieldErrors: { coverId: "That image is no longer in the vault. Pick another." },
+    };
+  }
 
   try {
     const { count } = await db.interest.updateMany({ where: { id }, data: toData(parsed.data) });
@@ -81,7 +96,7 @@ export async function deleteInterest(id: string): Promise<ActionState> {
   await requireAdmin(`${LIST}/${id}`);
 
   // deleteMany so a double-click or stale tab doesn't throw on a missing row.
-  // Albums and the cover image stay; their link to this side quest is cleared by the FK.
+  // The cover image stays in the Media vault.
   await db.interest.deleteMany({ where: { id } });
   updateTag(tags.interests);
   redirect(LIST);

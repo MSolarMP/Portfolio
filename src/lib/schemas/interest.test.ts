@@ -83,3 +83,11 @@ describe("interestFormValues + interestSchema", () => {
     expect(interestSchema.safeParse(interestFormValues(fd)).success).toBe(false);
   });
 });
+
+describe("coverId", () => {
+  it("is null when no cover is picked and the id when one is", () => {
+    expect(interestSchema.parse(interestFormValues(form(valid))).coverId).toBeNull();
+    const fd = form([...valid, ["coverId", "abc-123"]]);
+    expect(interestSchema.parse(interestFormValues(fd)).coverId).toBe("abc-123");
+  });
+});

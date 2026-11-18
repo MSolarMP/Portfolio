@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
+import { listMediaOptions } from "@/server/content/media";
 import { listChapterOptions } from "@/server/content/quests";
 import { blankValues, QuestForm } from "../quest-form";
 
@@ -27,6 +28,6 @@ export default function NewQuest() {
 }
 
 async function NewQuestForm() {
-  const chapters = await listChapterOptions();
-  return <QuestForm initial={blankValues} chapters={chapters} />;
+  const [chapters, media] = await Promise.all([listChapterOptions(), listMediaOptions()]);
+  return <QuestForm initial={blankValues} chapters={chapters} media={media} />;
 }

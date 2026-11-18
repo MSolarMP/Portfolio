@@ -6,6 +6,7 @@ import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { QUEST_SECTIONS } from "@/lib/schemas/quest";
+import { listMediaOptions } from "@/server/content/media";
 import { getQuest, listChapterOptions } from "@/server/content/quests";
 import { deleteQuest } from "../actions";
 import { QuestForm, type Values } from "../quest-form";
@@ -32,7 +33,11 @@ export default function EditQuest({ params, searchParams }: PageProps<"/admin/qu
 
 async function Editor({ params, searchParams }: PageProps<"/admin/quests/[id]">) {
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
-  const [quest, chapters] = await Promise.all([getQuest(id), listChapterOptions()]);
+  const [quest, chapters, media] = await Promise.all([
+    getQuest(id),
+    listChapterOptions(),
+    listMediaOptions(),
+  ]);
   if (!quest) notFound();
 
   const initial: Values = {
@@ -47,6 +52,7 @@ async function Editor({ params, searchParams }: PageProps<"/admin/quests/[id]">)
     repoUrl: quest.repoUrl ?? "",
     liveUrl: quest.liveUrl ?? "",
     chapterId: quest.chapterId ?? "",
+    diagramId: quest.diagramId ?? "",
     sections: Object.fromEntries(
       QUEST_SECTIONS.map((s) => [s.key, quest[s.key] ? JSON.stringify(quest[s.key]) : ""]),
     ) as Values["sections"],
@@ -72,6 +78,7 @@ async function Editor({ params, searchParams }: PageProps<"/admin/quests/[id]">)
         id={quest.id}
         initial={initial}
         chapters={chapters}
+        media={media}
         justCreated={created === "1"}
       />
     </>

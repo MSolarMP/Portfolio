@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { richTextField } from "@/lib/rich-text";
-import { optionalText, slugField } from "./fields";
+import { optionalId, optionalText, slugField } from "./fields";
 
 export const STATS_MAX = 6;
 export const TAGLINE_MAX = 160;
@@ -10,13 +10,15 @@ const statSchema = z.object({
   value: z.string().trim().min(1, "Every stat needs a value.").max(40),
 });
 
-/** A side quest (the `Interest` model) as edited in the admin. The cover arrives with the Media vault. */
+/** A side quest (the `Interest` model) as edited in the admin. */
 export const interestSchema = z.object({
   title: z.string().trim().min(1, "Give it a title.").max(80, "Keep it under 80 characters."),
   slug: slugField(60),
   tagline: optionalText(TAGLINE_MAX),
   attribute: optionalText(40),
   body: richTextField,
+  /** Media id of the cover image. */
+  coverId: optionalId,
   stats: z.array(statSchema).max(STATS_MAX, `Up to ${STATS_MAX} stats.`),
   status: z.enum(["DRAFT", "PUBLISHED"]),
   featured: z.boolean(),
@@ -42,6 +44,7 @@ export function interestFormValues(formData: FormData) {
     tagline: formData.get("tagline") ?? "",
     attribute: formData.get("attribute") ?? "",
     body: formData.get("body") ?? "",
+    coverId: formData.get("coverId") ?? "",
     stats,
     status: formData.get("status"),
     featured: formData.get("featured") === "on",

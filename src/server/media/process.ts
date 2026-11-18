@@ -1,22 +1,10 @@
 import "server-only";
-import exifr from "exifr";
 import sharp from "sharp";
 
 /** Widths the site picks from with `srcset`. Images are never enlarged. */
 export const VARIANT_WIDTHS = [640, 1280, 1920] as const;
 export const VARIANT_FORMATS = ["avif", "webp"] as const;
 export type VariantFormat = (typeof VARIANT_FORMATS)[number];
-
-/** Camera details shown as "item lore". GPS is never read. */
-export type ImageLore = {
-  camera?: string;
-  lens?: string;
-  aperture?: string;
-  shutter?: string;
-  iso?: number;
-  focalLength?: string;
-  takenAt?: string; // ISO date-time
-};
 
 export type ProcessedImage = {
   /** What the file really is, according to its contents (not its name or the browser). */
@@ -25,7 +13,6 @@ export type ProcessedImage = {
   height: number;
   /** Tiny WebP as a data URL, shown blurred while the real image loads. */
   blurData: string;
-  lore: ImageLore | null;
   variants: { format: VariantFormat; width: number; data: Buffer }[];
 };
 
@@ -73,57 +60,6 @@ export async function processImage(input: Buffer): Promise<ProcessedImage> {
     width,
     height,
     blurData: `data:image/webp;base64,${blur.toString("base64")}`,
-    lore: await readLore(input),
     variants,
   };
-}
-
-/** Reads camera settings from EXIF. Only these tags are parsed; GPS is never touched. */
-export async function readLore(input: Buffer): Promise<ImageLore | null> {
-  let raw: Record<string, unknown> | undefined;
-  try {
-    raw = await exifr.parse(input, {
-      pick: [
-        "Make",
-        "Model",
-        "LensModel",
-        "FNumber",
-        "ExposureTime",
-        "ISO",
-        "FocalLength",
-        "DateTimeOriginal",
-      ],
-      gps: false,
-    });
-  } catch {
-    return null; // no or unreadable EXIF is normal (screenshots, PNGs, edited exports)
-  }
-  if (!raw) return null;
-
-  const text = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
-  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
-
-  const make = text(raw.Make);
-  const model = text(raw.Model);
-  const fNumber = num(raw.FNumber);
-  const exposure = num(raw.ExposureTime);
-  const focal = num(raw.FocalLength);
-  const taken = raw.DateTimeOriginal instanceof Date ? raw.DateTimeOriginal : undefined;
-
-  const lore: ImageLore = {
-    // "Canon" + "Canon EOS R6" → "Canon EOS R6"
-    camera: make && model ? (model.startsWith(make) ? model : `${make} ${model}`) : (model ?? make),
-    lens: text(raw.LensModel),
-    aperture: fNumber ? `f/${fNumber}` : undefined,
-    shutter: exposure
-      ? exposure < 1
-        ? `1/${Math.round(1 / exposure)}s`
-        : `${exposure}s`
-      : undefined,
-    iso: num(raw.ISO),
-    focalLength: focal ? `${Math.round(focal)}mm` : undefined,
-    takenAt: taken && !Number.isNaN(taken.getTime()) ? taken.toISOString() : undefined,
-  };
-  const kept = Object.fromEntries(Object.entries(lore).filter(([, v]) => v !== undefined));
-  return Object.keys(kept).length ? (kept as ImageLore) : null;
 }

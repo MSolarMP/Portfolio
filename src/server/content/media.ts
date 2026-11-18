@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/server/db";
-import type { ImageLore, VariantFormat } from "@/server/media/process";
+import type { VariantFormat } from "@/server/media/process";
 import { publicUrl } from "@/server/media/storage";
 
 /** `Media.variants`: { avif: { "640": path, … }, webp: { … } } — paths in the public bucket. */
@@ -41,7 +41,7 @@ export async function listMedia() {
   }));
 }
 
-/** Admin: one image with its preview, every public file, its lore and where it's used. */
+/** Admin: one image with its preview, every public file and where it's used. */
 export async function getMedia(id: string) {
   const row = await db.media.findUnique({
     where: { id },
@@ -54,7 +54,6 @@ export async function getMedia(id: string) {
   const variants = readVariants(row.variants);
   return {
     ...row,
-    lore: (row.exif ?? null) as ImageLore | null,
     previewUrl: variantUrl(variants, "webp", 1280),
     files: Object.entries(variants).flatMap(([format, byWidth]) =>
       Object.entries(byWidth ?? {}).map(([width, path]) => ({
@@ -64,4 +63,24 @@ export async function getMedia(id: string) {
       })),
     ),
   };
+}
+
+/** Admin: the choices for a media picker (cover, diagram), newest first. */
+export async function listMediaOptions() {
+  const rows = await db.media.findMany({
+    where: { state: "READY", kind: "IMAGE" },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, filename: true, alt: true, width: true, height: true, variants: true },
+  });
+  return rows.map(({ variants, ...r }) => ({
+    ...r,
+    thumbUrl: variantUrl(readVariants(variants), "webp", 640),
+  }));
+}
+
+export type MediaOption = Awaited<ReturnType<typeof listMediaOptions>>[number];
+
+/** True if `id` is an image in the vault. Used to check a picked cover/diagram still exists. */
+export async function mediaExists(id: string) {
+  return (await db.media.count({ where: { id } })) > 0;
 }

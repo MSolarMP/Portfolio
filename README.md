@@ -6,33 +6,33 @@ A full stack portfolio built as a working product rather than a static page. Eve
 
 ## Stack
 
-| Layer           | Choice                                                                  |
-| --------------- | ----------------------------------------------------------------------- |
-| Framework       | Next.js (App Router, Cache Components) · TypeScript                     |
-| Styling         | Tailwind CSS · hand-built components (no UI library)                    |
-| Database        | PostgreSQL on Supabase · Prisma ORM                                     |
-| Auth            | Better Auth — owner-only sign-in (magic link, GitHub)                   |
-| Validation      | Zod — one schema per entity, shared by forms and server actions         |
-| Rich text       | Tiptap, stored as allow-listed JSON                                     |
-| Media           | Supabase Storage (AVIF/WebP variants made with sharp, EXIF without GPS) |
-| Background jobs | Next.js `after()`; a durable queue arrives with SMS                     |
-| Email / SMS     | Resend · SMS Portal                                                     |
-| Edge            | Vercel hosting · Cloudflare DNS, Turnstile                              |
-| Testing         | Vitest · GitHub Actions                                                 |
+| Layer           | Choice                                                                   |
+| --------------- | ------------------------------------------------------------------------ |
+| Framework       | Next.js (App Router, Cache Components) · TypeScript                      |
+| Styling         | Tailwind CSS · hand-built components (no UI library)                     |
+| Database        | PostgreSQL on Supabase · Prisma ORM                                      |
+| Auth            | Better Auth — owner-only sign-in (magic link, GitHub)                    |
+| Validation      | Zod — one schema per entity, shared by forms and server actions          |
+| Rich text       | Tiptap, stored as allow-listed JSON                                      |
+| Media           | Supabase Storage (AVIF/WebP variants made with sharp, metadata stripped) |
+| Background jobs | Next.js `after()`; a durable queue arrives with SMS                      |
+| Email / SMS     | Resend · SMS Portal                                                      |
+| Edge            | Vercel hosting · Cloudflare DNS, Turnstile                               |
+| Testing         | Vitest · GitHub Actions                                                  |
 
 ## Admin portal
 
 `/admin` is where every piece of public content is written. It is built with plain React, Tailwind and native HTML (`<dialog>`, `<form>`, server actions), with no component library.
 
-| Section       | What it edits                                                             |
-| ------------- | ------------------------------------------------------------------------- |
-| Pages & copy  | Every line of site text, plain or rich                                    |
-| Quests        | Case studies: summary, stack, links, chapter and seven rich-text sections |
-| Side quests   | Hobbies: tagline, attribute, stats and story                              |
-| Chronicle     | Work history: dates, summary, ordered highlights, stack                   |
-| Skills        | The skill tree, by category, edited inline                                |
-| Commendations | LinkedIn recommendations, each linking back to the original               |
-| Media vault   | Image uploads: AVIF/WebP copies at three widths, GPS stripped, alt text   |
+| Section       | What it edits                                                                                        |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| Pages & copy  | Every line of site text, plain or rich                                                               |
+| Quests        | Case studies: summary, stack, links, chapter, diagram and seven rich-text sections                   |
+| Side quests   | Hobbies: cover image, tagline, attribute, stats and story                                            |
+| Chronicle     | Work history: dates, summary, ordered highlights, stack                                              |
+| Skills        | The skill tree, by category, edited inline                                                           |
+| Commendations | LinkedIn recommendations, each linking back to the original                                          |
+| Media vault   | Display images (profile photo, screenshots, diagrams): AVIF/WebP copies, metadata stripped, alt text |
 
 Every save follows the same path: check the owner's session → validate with Zod → write with Prisma → refresh only the affected cache tags. Lists can be sorted and reordered by drag or keyboard; rich text is cleaned against an allow-list on the server, so only known formatting and safe links are stored.
 
@@ -98,7 +98,7 @@ One Next.js app. Public pages render from the database inside cached functions; 
 | No UI component library; admin components written in plain React + Tailwind       | Every component is understood and owned; native `<dialog>` and form elements cover accessibility.                                                      |
 | Rich text stored as Tiptap JSON and cleaned against an allow-list on save         | The public renderer only ever sees known nodes and safe links, so no raw HTML is ever injected.                                                        |
 | Database-driven content with tag-based caching                                    | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                               |
-| Media in Supabase Storage: private originals, public resized copies               | Same project as the database and within the free plan for a small gallery; GPS stripped before anything is public.                                     |
+| Media in Supabase Storage: private originals, public resized copies               | Same project as the database and well within the free plan for a few display images; metadata (incl. GPS) stripped before anything is public.          |
 | `after()` for background work; a queue only once SMS needs retries                | No infrastructure before a workload needs it.                                                                                                          |
 | Migrations run during production builds only                                      | Schema and code ship together; previews never change the live schema. Migrations stay additive.                                                        |
 | Functions pinned to `dub1`, next to the database                                  | Saves ~75 ms on every database round trip.                                                                                                             |

@@ -8,7 +8,7 @@ import { tags } from "@/lib/cache-tags";
 import { imageFileError, mediaDetailsFormValues, mediaDetailsSchema } from "@/lib/schemas/media";
 import { requireAdmin } from "@/server/authz";
 import type { VariantMap } from "@/server/content/media";
-import { db, jsonOrNull } from "@/server/db";
+import { db } from "@/server/db";
 import { processImage, type ProcessedImage } from "@/server/media/process";
 import { buckets, putObject, removeObjects } from "@/server/media/storage";
 
@@ -99,7 +99,6 @@ export async function uploadMedia(_prev: ActionState, formData: FormData): Promi
       height: image.height,
       blurData: image.blurData,
       variants,
-      exif: jsonOrNull(image.lore),
       ...details.data,
     },
   });

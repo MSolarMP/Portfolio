@@ -160,26 +160,11 @@ model Interest {
   featured  Boolean  @default(false)
   coverId   String?
   cover     Media?   @relation("InterestCover", fields: [coverId], references: [id], onDelete: SetNull)
-  albums    Album[]
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   @@index([coverId])
   @@index([status, order])
-}
-
-model Album {
-  id         String    @id @default(cuid())
-  slug       String    @unique
-  title      String
-  region     String? /// coarse only, e.g. "Eastern Cape"
-  order      Int       @default(0)
-  interestId String?
-  interest   Interest? @relation(fields: [interestId], references: [id], onDelete: SetNull)
-  media      Media[]
-  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
-
-  @@index([interestId])
 }
 
 model Media {
@@ -196,19 +181,13 @@ model Media {
   blurData  String? /// tiny base64 placeholder
   alt       String?
   caption   String?
-  exif      Json? /// camera, lens, aperture, shutter, iso — never GPS
-  region    String?
   error     String?
-  order     Int        @default(0)
-  albumId   String?
-  album     Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull)
   createdAt DateTime   @default(now()) @db.Timestamptz(3)
   updatedAt DateTime   @updatedAt @db.Timestamptz(3)
 
   coverOf   Interest[] @relation("InterestCover")
   diagramOf Quest[]    @relation("QuestDiagram")
 
-  @@index([albumId])
   @@index([state])
 }
 

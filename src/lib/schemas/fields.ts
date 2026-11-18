@@ -77,3 +77,10 @@ export const stackField = z
       .array(z.string().max(30, "Keep each technology under 30 characters."))
       .max(STACK_MAX, `Up to ${STACK_MAX} technologies.`),
   );
+
+/** An optional reference to another record (e.g. a Media id); blank becomes null. */
+export const optionalId = z
+  .string()
+  .trim()
+  .max(100)
+  .transform((v) => v || null);

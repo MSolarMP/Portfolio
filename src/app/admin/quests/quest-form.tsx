@@ -4,12 +4,14 @@ import { useActionState, useState } from "react";
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { SaveBar } from "@/components/admin/save-bar";
+import { MediaPicker } from "@/components/admin/media-picker";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { QuestKind, Rarity, Status } from "@/generated/prisma/enums";
 import { type ActionState, idle } from "@/lib/action-state";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
 import { parseStack, slugify, STACK_MAX } from "@/lib/schemas/fields";
 import { QUEST_SECTIONS, type QuestSection, SUMMARY_MAX } from "@/lib/schemas/quest";
+import type { MediaOption } from "@/server/content/media";
 import { createQuest, updateQuest } from "./actions";
 import { KIND_LABELS, RARITY_LABELS } from "./labels";
 
@@ -26,6 +28,8 @@ export type Values = {
   repoUrl: string;
   liveUrl: string;
   chapterId: string;
+  /** Media id of the architecture diagram, "" for none. */
+  diagramId: string;
   /** Each section's Tiptap JSON as a string, "" when empty. */
   sections: Record<QuestSection, string>;
   status: Status;
@@ -46,6 +50,7 @@ export const blankValues: Values = {
   repoUrl: "",
   liveUrl: "",
   chapterId: "",
+  diagramId: "",
   sections: Object.fromEntries(QUEST_SECTIONS.map((s) => [s.key, ""])) as Values["sections"],
   status: "DRAFT",
   featured: false,
@@ -81,11 +86,14 @@ export function QuestForm({
   id,
   initial,
   chapters,
+  media,
   justCreated = false,
 }: {
   id?: string;
   initial: Values;
   chapters: ChapterOption[];
+  /** Vault images to pick the diagram from. */
+  media: MediaOption[];
   justCreated?: boolean;
 }) {
   const [saved, setSaved] = useState(initial);
@@ -329,10 +337,17 @@ export function QuestForm({
       <section className={card}>
         <div>
           <h2 className="label-caps">Case study</h2>
-          <p className="text-ink-faded text-sm">
-            Leave a section empty to hide it. The architecture diagram arrives with the Media vault.
-          </p>
+          <p className="text-ink-faded text-sm">Leave a section empty to hide it.</p>
         </div>
+        <MediaPicker
+          name="diagramId"
+          label="Architecture diagram"
+          hint="An image of how the system fits together. Make it in any tool, export a PNG, upload it to the vault."
+          error={errors.diagramId}
+          options={media}
+          value={values.diagramId}
+          onChange={(diagramId) => set("diagramId", diagramId)}
+        />
         {QUEST_SECTIONS.map((s) => (
           <RichTextEditor
             key={`${s.key}-${revision}`}

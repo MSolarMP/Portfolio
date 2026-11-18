@@ -24,11 +24,9 @@ describe("mediaDetailsSchema", () => {
     const fd = new FormData();
     fd.append("alt", "  Sunrise over Sardinia Bay ");
     fd.append("caption", "");
-    fd.append("region", "Eastern Cape");
     expect(mediaDetailsSchema.parse(mediaDetailsFormValues(fd))).toEqual({
       alt: "Sunrise over Sardinia Bay",
       caption: null,
-      region: "Eastern Cape",
     });
   });
 

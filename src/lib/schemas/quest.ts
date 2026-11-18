@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { richTextField } from "@/lib/rich-text";
-import { optionalHttpsUrl, optionalText, slugField, stackField } from "./fields";
+import { optionalHttpsUrl, optionalId, optionalText, slugField, stackField } from "./fields";
 
 export const SUMMARY_MAX = 300;
 
@@ -36,7 +36,7 @@ const sectionFields = Object.fromEntries(QUEST_SECTIONS.map((s) => [s.key, richT
   [K in QuestSection]: typeof richTextField;
 };
 
-/** A quest (case study) as edited in the admin. The architecture diagram arrives with the Media vault. */
+/** A quest (case study) as edited in the admin. */
 export const questSchema = z.object({
   title: z.string().trim().min(1, "Give it a title.").max(100, "Keep it under 100 characters."),
   slug: slugField(80),
@@ -52,10 +52,9 @@ export const questSchema = z.object({
   stack: stackField,
   repoUrl: optionalHttpsUrl(),
   liveUrl: optionalHttpsUrl(),
-  chapterId: z
-    .string()
-    .max(100)
-    .transform((v) => v || null),
+  chapterId: optionalId,
+  /** Media id of the architecture diagram. */
+  diagramId: optionalId,
   ...sectionFields,
   status: z.enum(["DRAFT", "PUBLISHED"]),
   featured: z.boolean(),
@@ -78,6 +77,7 @@ export function questFormValues(formData: FormData) {
     repoUrl: text("repoUrl"),
     liveUrl: text("liveUrl"),
     chapterId: text("chapterId"),
+    diagramId: text("diagramId"),
     ...Object.fromEntries(QUEST_SECTIONS.map((s) => [s.key, text(s.key)])),
     status: formData.get("status"),
     featured: formData.get("featured") === "on",

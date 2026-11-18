@@ -8,6 +8,7 @@ import { tags } from "@/lib/cache-tags";
 import { type QuestInput, questFormValues, questSchema } from "@/lib/schemas/quest";
 import { isSameSet, reorderSchema } from "@/lib/schemas/reorder";
 import { requireAdmin } from "@/server/authz";
+import { mediaExists } from "@/server/content/media";
 import { db, jsonOrNull } from "@/server/db";
 
 const LIST = "/admin/quests";
@@ -52,6 +53,13 @@ export async function createQuest(_prev: ActionState, formData: FormData): Promi
 
   const parsed = questSchema.safeParse(questFormValues(formData));
   if (!parsed.success) return invalid(parsed.error);
+  if (parsed.data.diagramId && !(await mediaExists(parsed.data.diagramId))) {
+    return {
+      status: "error",
+      message: "Check the highlighted fields.",
+      fieldErrors: { diagramId: "That image is no longer in the vault. Pick another." },
+    };
+  }
 
   let id: string;
   try {
@@ -81,6 +89,13 @@ export async function updateQuest(
 
   const parsed = questSchema.safeParse(questFormValues(formData));
   if (!parsed.success) return invalid(parsed.error);
+  if (parsed.data.diagramId && !(await mediaExists(parsed.data.diagramId))) {
+    return {
+      status: "error",
+      message: "Check the highlighted fields.",
+      fieldErrors: { diagramId: "That image is no longer in the vault. Pick another." },
+    };
+  }
 
   const before = await db.quest.findUnique({ where: { id }, select: { slug: true } });
   if (!before) return { status: "error", message: "This quest no longer exists." };

@@ -101,3 +101,10 @@ describe("questSchema", () => {
     expect(parse({ kind: "SECRET" }).success).toBe(false);
   });
 });
+
+describe("diagramId", () => {
+  it("is null when no diagram is picked and the id when one is", () => {
+    expect(parse().data?.diagramId).toBeNull();
+    expect(parse({ diagramId: "abc-123" }).data?.diagramId).toBe("abc-123");
+  });
+});

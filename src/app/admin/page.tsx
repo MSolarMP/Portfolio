@@ -15,10 +15,7 @@ export default function AdminOverview() {
 
       <div className="bg-vellum border-rule rounded border px-5 py-4">
         <h2 className="font-display text-base font-bold">Coming next</h2>
-        <p className="text-ink-faded">
-          Picking images for side-quest covers and quest diagrams, albums, then the Ravens inbox and
-          site settings.
-        </p>
+        <p className="text-ink-faded">The Ravens inbox (contact messages) and site settings.</p>
       </div>
     </div>
   );

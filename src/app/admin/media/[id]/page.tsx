@@ -30,16 +30,6 @@ export default function MediaItem({ params, searchParams }: PageProps<"/admin/me
   );
 }
 
-const LORE_LABELS = {
-  camera: "Camera",
-  lens: "Lens",
-  focalLength: "Focal length",
-  aperture: "Aperture",
-  shutter: "Shutter",
-  iso: "ISO",
-  takenAt: "Taken",
-} as const;
-
 async function Item({ params, searchParams }: PageProps<"/admin/media/[id]">) {
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
   const m = await getMedia(id);
@@ -55,15 +45,6 @@ async function Item({ params, searchParams }: PageProps<"/admin/media/[id]">) {
       href: `/admin/quests/${q.id}`,
     })),
   ];
-  const lore = m.lore
-    ? (Object.keys(LORE_LABELS) as (keyof typeof LORE_LABELS)[]).flatMap((k) => {
-        const v = m.lore?.[k];
-        if (v === undefined) return [];
-        return [
-          { label: LORE_LABELS[k], value: k === "takenAt" ? formatDate(String(v)) : String(v) },
-        ];
-      })
-    : [];
 
   return (
     <>
@@ -98,7 +79,7 @@ async function Item({ params, searchParams }: PageProps<"/admin/media/[id]">) {
           <DetailsForm
             id={m.id}
             justCreated={created === "1"}
-            initial={{ alt: m.alt ?? "", caption: m.caption ?? "", region: m.region ?? "" }}
+            initial={{ alt: m.alt ?? "", caption: m.caption ?? "" }}
           />
         </div>
 
@@ -115,23 +96,6 @@ async function Item({ params, searchParams }: PageProps<"/admin/media/[id]">) {
               <dt className="text-ink-faded">Uploaded</dt>
               <dd>{formatDate(m.createdAt)}</dd>
             </dl>
-          </section>
-
-          <section className="bg-vellum border-rule rounded border px-4 py-4">
-            <h2 className="label-caps mb-2">Item lore</h2>
-            {lore.length ? (
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-                {lore.map((l) => (
-                  <div key={l.label} className="contents">
-                    <dt className="text-ink-faded">{l.label}</dt>
-                    <dd>{l.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <p className="text-ink-faded text-sm">No camera details in this file.</p>
-            )}
-            <p className="text-ink-faded mt-2 text-xs">Location data is never read or published.</p>
           </section>
 
           <section className="bg-vellum border-rule rounded border px-4 py-4">

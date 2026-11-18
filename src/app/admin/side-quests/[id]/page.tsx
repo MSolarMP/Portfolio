@@ -6,6 +6,7 @@ import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { getInterest } from "@/server/content/interests";
+import { listMediaOptions } from "@/server/content/media";
 import { deleteInterest } from "../actions";
 import { SideQuestForm } from "../side-quest-form";
 
@@ -34,7 +35,7 @@ export default function EditSideQuest({
 
 async function Editor({ params, searchParams }: PageProps<"/admin/side-quests/[id]">) {
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
-  const quest = await getInterest(id);
+  const [quest, media] = await Promise.all([getInterest(id), listMediaOptions()]);
   if (!quest) notFound();
 
   return (
@@ -46,12 +47,13 @@ async function Editor({ params, searchParams }: PageProps<"/admin/side-quests/[i
         <DeleteButton
           action={deleteInterest.bind(null, quest.id)}
           title={`Delete “${quest.title}”?`}
-          description="It disappears from the site straight away. Its albums and cover image stay in the Media vault."
+          description="It disappears from the site straight away. Its cover image stays in the Media vault."
           confirmLabel="Delete side quest"
         />
       </div>
 
       <SideQuestForm
+        media={media}
         id={quest.id}
         justCreated={created === "1"}
         initial={{
@@ -60,6 +62,7 @@ async function Editor({ params, searchParams }: PageProps<"/admin/side-quests/[i
           tagline: quest.tagline ?? "",
           attribute: quest.attribute ?? "",
           body: quest.body ? JSON.stringify(quest.body) : "",
+          coverId: quest.coverId ?? "",
           stats: quest.stats,
           status: quest.status,
           featured: quest.featured,

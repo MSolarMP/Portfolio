@@ -5,12 +5,14 @@ import { Button } from "@/components/admin/button";
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { SaveBar } from "@/components/admin/save-bar";
+import { MediaPicker } from "@/components/admin/media-picker";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { Status } from "@/generated/prisma/enums";
 import { type ActionState, idle } from "@/lib/action-state";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
 import { slugify } from "@/lib/schemas/fields";
 import { type Stat, STATS_MAX, TAGLINE_MAX } from "@/lib/schemas/interest";
+import type { MediaOption } from "@/server/content/media";
 import { createInterest, updateInterest } from "./actions";
 
 export type Values = {
@@ -20,6 +22,8 @@ export type Values = {
   attribute: string;
   /** Tiptap JSON as a string, "" when empty. */
   body: string;
+  /** Media id of the cover, "" for none. */
+  coverId: string;
   stats: Stat[];
   status: Status;
   featured: boolean;
@@ -31,6 +35,7 @@ export const blankValues: Values = {
   tagline: "",
   attribute: "",
   body: "",
+  coverId: "",
   stats: [],
   status: "DRAFT",
   featured: false,
@@ -63,10 +68,13 @@ const same = (a: Values, b: Values) =>
 export function SideQuestForm({
   id,
   initial,
+  media,
   justCreated = false,
 }: {
   id?: string;
   initial: Values;
+  /** Vault images to pick the cover from. */
+  media: MediaOption[];
   justCreated?: boolean;
 }) {
   const [saved, setSaved] = useState(initial);
@@ -252,11 +260,20 @@ export function SideQuestForm({
 
       <section className="bg-vellum border-rule flex flex-col gap-4 rounded border px-4 py-5 sm:px-5">
         <h2 className="label-caps">Story</h2>
+        <MediaPicker
+          name="coverId"
+          label="Cover image"
+          hint="Shown on the side quest's card and at the top of its story."
+          error={errors.coverId}
+          options={media}
+          value={values.coverId}
+          onChange={(coverId) => set("coverId", coverId)}
+        />
         <RichTextEditor
           key={revision}
           name="body"
           label="The story"
-          hint="Shown when a visitor opens this side quest. The cover image arrives with the Media vault."
+          hint="Shown when a visitor opens this side quest."
           error={errors.body}
           initial={parseDoc(saved.body)}
           onChange={(body) => set("body", body)}

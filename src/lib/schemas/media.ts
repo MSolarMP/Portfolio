@@ -13,14 +13,10 @@ export function imageFileError(file: unknown): string | null {
   return null;
 }
 
-/**
- * The words around an image. Alt text describes it for people who can't see it;
- * region is deliberately coarse ("Eastern Cape"), never an exact place.
- */
+/** The words around an image. Alt text describes it for people who can't see it. */
 export const mediaDetailsSchema = z.object({
   alt: optionalText(200),
   caption: optionalText(300),
-  region: optionalText(60),
 });
 
 export type MediaDetails = z.infer<typeof mediaDetailsSchema>;
@@ -29,6 +25,5 @@ export function mediaDetailsFormValues(formData: FormData) {
   return {
     alt: formData.get("alt") ?? "",
     caption: formData.get("caption") ?? "",
-    region: formData.get("region") ?? "",
   };
 }

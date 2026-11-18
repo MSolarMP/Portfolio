@@ -6,17 +6,16 @@ import { SaveBar } from "@/components/admin/save-bar";
 import { type ActionState, idle } from "@/lib/action-state";
 import { updateMedia } from "./actions";
 
-type Values = { alt: string; caption: string; region: string };
+type Values = { alt: string; caption: string };
 
 const trim = (v: Values): Values => ({
   alt: v.alt.trim(),
   caption: v.caption.trim(),
-  region: v.region.trim(),
 });
 
 const created: ActionState = { status: "success", message: "Uploaded.", at: 0 };
 
-/** Alt text, caption and coarse region for one image. */
+/** Alt text and caption for one image. */
 export function DetailsForm({
   id,
   initial,
@@ -73,22 +72,6 @@ export function DetailsForm({
               value={values.caption}
               onChange={(e) => set("caption", e.target.value)}
               className={`${fieldClass} field-sizing-content min-h-11 font-serif`}
-            />
-          )}
-        </FormField>
-        <FormField
-          label="Region"
-          error={errors.region}
-          hint="Coarse only, e.g. Eastern Cape. Used on the map; never an exact place."
-        >
-          {(field) => (
-            <input
-              {...field}
-              name="region"
-              maxLength={60}
-              value={values.region}
-              onChange={(e) => set("region", e.target.value)}
-              className={`${fieldClass} sm:max-w-xs`}
             />
           )}
         </FormField>
