@@ -1,6 +1,6 @@
 import "server-only";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@/generated/prisma/client";
+import { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 // One PrismaClient per server process. In dev, Next.js hot-reloads modules,
 // so we stash the instance on globalThis to avoid exhausting connections.
@@ -29,3 +29,11 @@ function createClient() {
 export const db = globalForPrisma.prisma ?? createClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+
+/**
+ * Nullable JSON columns need `Prisma.DbNull` (SQL NULL) rather than a plain `null`.
+ * Values reaching here have already been validated by a Zod schema, so they are plain JSON.
+ */
+export function jsonOrNull(value: object | null) {
+  return value === null ? Prisma.DbNull : (value as Prisma.InputJsonValue);
+}

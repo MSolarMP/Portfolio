@@ -1,11 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Button } from "@/components/admin/button";
 import { FormField, fieldClass } from "@/components/admin/form-field";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { SaveBar } from "@/components/admin/save-bar";
+import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { Status } from "@/generated/prisma/enums";
 import { type ActionState, idle } from "@/lib/action-state";
+import { type RichDoc, richTextKey } from "@/lib/rich-text";
 import { slugify, type Stat, STATS_MAX, TAGLINE_MAX } from "@/lib/schemas/interest";
 import { createInterest, updateInterest } from "./actions";
 
@@ -14,6 +17,8 @@ export type Values = {
   slug: string;
   tagline: string;
   attribute: string;
+  /** Tiptap JSON as a string, "" when empty. */
+  body: string;
   stats: Stat[];
   status: Status;
   featured: boolean;
@@ -24,6 +29,7 @@ export const blankValues: Values = {
   slug: "",
   tagline: "",
   attribute: "",
+  body: "",
   stats: [],
   status: "DRAFT",
   featured: false,
@@ -37,6 +43,7 @@ function normalise(v: Values): Values {
     slug: v.slug.trim(),
     tagline: v.tagline.trim(),
     attribute: v.attribute.trim(),
+    body: richTextKey(v.body),
     stats: v.stats
       .map((s) => ({ label: s.label.trim(), value: s.value.trim() }))
       .filter((s) => s.label || s.value),
@@ -63,6 +70,8 @@ export function SideQuestForm({
 }) {
   const [saved, setSaved] = useState(initial);
   const [values, setValues] = useState(initial);
+  // Bumped on Revert to remount the rich-text editor with the saved content.
+  const [revision, setRevision] = useState(0);
   // New side quests: the slug tracks the title until the Keeper types in the slug box.
   const [slugTouched, setSlugTouched] = useState(Boolean(id));
   const dirty = !same(values, saved);
@@ -240,66 +249,43 @@ export function SideQuestForm({
         </div>
       </fieldset>
 
-      <fieldset className="bg-vellum border-rule flex flex-col gap-3 rounded border px-4 py-5 sm:px-5">
-        <legend className="label-caps float-left mb-1 w-full">Visibility</legend>
-        <div className="flex flex-wrap gap-x-6 gap-y-1">
-          {(["DRAFT", "PUBLISHED"] as const).map((s) => (
-            <label key={s} className="flex min-h-11 items-center gap-2">
-              <input
-                type="radio"
-                name="status"
-                value={s}
-                checked={values.status === s}
-                onChange={() => set("status", s)}
-                className="accent-oxblood h-5 w-5"
-              />
-              {s === "DRAFT" ? "Draft (hidden)" : "Published (on the site)"}
-            </label>
-          ))}
-        </div>
-        <label className="flex min-h-11 items-center gap-2">
-          <input
-            type="checkbox"
-            name="featured"
-            checked={values.featured}
-            onChange={(e) => set("featured", e.target.checked)}
-            className="accent-oxblood h-5 w-5"
-          />
-          Featured: shown large at the top of the list
-        </label>
-      </fieldset>
-
-      <section className="border-rule text-ink-faded rounded border border-dashed px-4 py-4 text-sm sm:px-5">
-        <b className="text-ink">Story and cover image</b> come later: the story with the rich-text
-        editor (Quests), the cover with the Media vault.
+      <section className="bg-vellum border-rule flex flex-col gap-4 rounded border px-4 py-5 sm:px-5">
+        <h2 className="label-caps">Story</h2>
+        <RichTextEditor
+          key={revision}
+          name="body"
+          label="The story"
+          hint="Shown when a visitor opens this side quest. The cover image arrives with the Media vault."
+          error={errors.body}
+          initial={parseDoc(saved.body)}
+          onChange={(body) => set("body", body)}
+        />
       </section>
 
-      <div className="bg-parchment/95 border-rule sticky bottom-0 -mx-1 flex flex-wrap items-center gap-3 border-t px-1 py-3">
-        <Button type="submit" disabled={pending || (Boolean(id) && !dirty)}>
-          {pending ? "Saving…" : id ? "Save" : "Create side quest"}
-        </Button>
-        {id ? (
-          dirty &&
-          !pending && (
-            <Button variant="ghost" onClick={() => setValues(saved)}>
-              Revert
-            </Button>
-          )
-        ) : (
-          <Link href="/admin/side-quests" className="inline-flex min-h-11 items-center px-2">
-            Cancel
-          </Link>
-        )}
-        <p aria-live="polite" className="text-sm">
-          {state.status === "error" ? (
-            <span className="text-oxblood font-bold">{state.message}</span>
-          ) : id && dirty ? (
-            <span className="text-ink-faded">Unsaved changes</span>
-          ) : state.status === "success" ? (
-            <span className="text-moss-text font-bold">{state.message}</span>
-          ) : null}
-        </p>
-      </div>
+      <VisibilityFields
+        status={values.status}
+        featured={values.featured}
+        featuredLabel="Featured: shown large at the top of the list"
+        onStatus={(s) => set("status", s)}
+        onFeatured={(f) => set("featured", f)}
+      />
+
+      <SaveBar
+        isNew={!id}
+        createLabel="Create side quest"
+        cancelHref="/admin/side-quests"
+        dirty={dirty}
+        pending={pending}
+        state={state}
+        onRevert={() => {
+          setValues(saved);
+          setRevision((r) => r + 1);
+        }}
+      />
     </form>
   );
+}
+
+function parseDoc(json: string): RichDoc | null {
+  return json ? (JSON.parse(json) as RichDoc) : null;
 }

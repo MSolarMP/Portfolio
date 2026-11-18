@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
 import { type Column, DataTable } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { Status } from "@/generated/prisma/enums";
-import { type ActionState, idle } from "@/lib/action-state";
+import { formatDate } from "@/lib/format";
 import { reorderInterests } from "./actions";
 
 export type Row = {
@@ -17,14 +16,6 @@ export type Row = {
   featured: boolean;
   updatedAt: string; // ISO; formatted here so server and browser agree
 };
-
-// Fixed locale and zone so the server render and hydration print the same date.
-const date = new Intl.DateTimeFormat("en-ZA", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "Africa/Johannesburg",
-});
 
 const columns: Column<Row>[] = [
   {
@@ -73,51 +64,25 @@ const columns: Column<Row>[] = [
     header: "Updated",
     sortValue: (r) => -Date.parse(r.updatedAt), // ascending = newest first
     className: "whitespace-nowrap tabular-nums",
-    cell: (r) => <time dateTime={r.updatedAt}>{date.format(new Date(r.updatedAt))}</time>,
+    cell: (r) => <time dateTime={r.updatedAt}>{formatDate(r.updatedAt)}</time>,
   },
 ];
 
-/** The side quests list. Reordering updates the screen at once, then saves; a failed save puts it back. */
+/** The side quests list: sortable, and reorderable by drag or ↑ ↓. */
 export function SideQuestsTable({ initialRows }: { initialRows: Row[] }) {
-  const [rows, setRows] = useState(initialRows);
-  const [state, setState] = useState<ActionState>(idle);
-  const [pending, startTransition] = useTransition();
-
-  function reorder(ids: string[]) {
-    const before = rows;
-    const byId = new Map(rows.map((r) => [r.id, r]));
-    setRows(ids.flatMap((id) => byId.get(id) ?? []));
-    startTransition(async () => {
-      const result = await reorderInterests(ids);
-      if (result.status === "error") setRows(before);
-      setState(result);
-    });
-  }
-
   return (
-    <div className="flex flex-col gap-2">
-      <DataTable
-        caption="Side quests"
-        rows={rows}
-        columns={columns}
-        getId={(r) => r.id}
-        getLabel={(r) => r.title}
-        onReorder={reorder}
-        empty={
-          <>
-            No side quests yet. <Link href="/admin/side-quests/new">Add the first one</Link>.
-          </>
-        }
-      />
-      <p aria-live="polite" className="min-h-6 text-sm">
-        {pending ? (
-          <span className="text-ink-faded">Saving order…</span>
-        ) : state.status === "error" ? (
-          <span className="text-oxblood font-bold">{state.message}</span>
-        ) : state.status === "success" ? (
-          <span className="text-moss-text font-bold">{state.message}</span>
-        ) : null}
-      </p>
-    </div>
+    <DataTable
+      caption="Side quests"
+      rows={initialRows}
+      columns={columns}
+      getId={(r) => r.id}
+      getLabel={(r) => r.title}
+      onReorder={reorderInterests}
+      empty={
+        <>
+          No side quests yet. <Link href="/admin/side-quests/new">Add the first one</Link>.
+        </>
+      }
+    />
   );
 }

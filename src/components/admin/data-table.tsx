@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, useTransition, type DragEvent, type ReactNode } from "react";
+import { type ActionState, idle } from "@/lib/action-state";
 
 export type Column<T> = {
   key: string;
@@ -19,11 +20,13 @@ type Sort = { key: string; dir: "asc" | "desc" } | null;
  * (keyboard, touch, screen readers). Reordering is only offered while unsorted,
  * because "move up" means nothing in a sorted view.
  *
- * The parent owns the order: `onReorder` receives every id, top to bottom.
+ * `onReorder` is a server action that receives every id, top to bottom. The table
+ * shows the new order straight away, then puts the old one back if the save fails.
+ * To reload rows from the server (e.g. after a create), remount it with a new `key`.
  */
 export function DataTable<T>({
   caption,
-  rows,
+  rows: initialRows,
   columns,
   getId,
   getLabel,
@@ -36,9 +39,12 @@ export function DataTable<T>({
   getId: (row: T) => string;
   /** Names a row in announcements and button labels, e.g. its title. */
   getLabel: (row: T) => string;
-  onReorder?: (ids: string[]) => void;
+  onReorder?: (ids: string[]) => Promise<ActionState>;
   empty?: ReactNode;
 }) {
+  const [rows, setRows] = useState(initialRows);
+  const [saveState, setSaveState] = useState<ActionState>(idle);
+  const [saving, startSaving] = useTransition();
   const [sort, setSort] = useState<Sort>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
@@ -64,10 +70,16 @@ export function DataTable<T>({
 
   function move(from: number, to: number) {
     if (!onReorder || from === to || to < 0 || to >= rows.length) return;
-    const ids = rows.map(getId);
-    const [id] = ids.splice(from, 1);
-    ids.splice(to, 0, id);
-    onReorder(ids);
+    const before = rows;
+    const next = [...rows];
+    const [row] = next.splice(from, 1);
+    next.splice(to, 0, row);
+    setRows(next);
+    startSaving(async () => {
+      const result = await onReorder(next.map(getId));
+      if (result.status === "error") setRows(before);
+      setSaveState(result);
+    });
     setAnnouncement(`${getLabel(rows[from])} moved to position ${to + 1} of ${rows.length}.`);
   }
 
@@ -227,6 +239,17 @@ export function DataTable<T>({
       <p aria-live="polite" className="sr-only">
         {announcement}
       </p>
+      {onReorder && (
+        <p aria-live="polite" className="min-h-6 text-sm">
+          {saving ? (
+            <span className="text-ink-faded">Saving order…</span>
+          ) : saveState.status === "error" ? (
+            <span className="text-oxblood font-bold">{saveState.message}</span>
+          ) : saveState.status === "success" ? (
+            <span className="text-moss-text font-bold">{saveState.message}</span>
+          ) : null}
+        </p>
+      )}
     </div>
   );
 }

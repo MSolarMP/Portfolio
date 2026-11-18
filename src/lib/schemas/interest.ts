@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { richTextField } from "@/lib/rich-text";
 
 export const STATS_MAX = 6;
 export const TAGLINE_MAX = 160;
@@ -31,7 +32,7 @@ const statSchema = z.object({
   value: z.string().trim().min(1, "Every stat needs a value.").max(40),
 });
 
-/** A side quest (the `Interest` model) as edited in the admin. Body and cover are edited elsewhere. */
+/** A side quest (the `Interest` model) as edited in the admin. The cover arrives with the Media vault. */
 export const interestSchema = z.object({
   title: z.string().trim().min(1, "Give it a title.").max(80, "Keep it under 80 characters."),
   slug: z
@@ -42,6 +43,7 @@ export const interestSchema = z.object({
     .regex(SLUG_PATTERN, "Lowercase letters, numbers and single hyphens only."),
   tagline: optionalText(TAGLINE_MAX),
   attribute: optionalText(40),
+  body: richTextField,
   stats: z.array(statSchema).max(STATS_MAX, `Up to ${STATS_MAX} stats.`),
   status: z.enum(["DRAFT", "PUBLISHED"]),
   featured: z.boolean(),
@@ -66,13 +68,9 @@ export function interestFormValues(formData: FormData) {
     slug: formData.get("slug") ?? "",
     tagline: formData.get("tagline") ?? "",
     attribute: formData.get("attribute") ?? "",
+    body: formData.get("body") ?? "",
     stats,
     status: formData.get("status"),
     featured: formData.get("featured") === "on",
   };
 }
-
-/** New display order for the side quests list: every id, top to bottom. */
-export const reorderSchema = z.object({
-  ids: z.array(z.string().min(1)).min(1).max(200),
-});

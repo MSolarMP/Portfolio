@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CONTENT_TEXT_MAX, contentBlockTextSchema } from "./content-block";
+import { CONTENT_TEXT_MAX, contentBlockRichSchema, contentBlockTextSchema } from "./content-block";
 
 describe("contentBlockTextSchema", () => {
   it("trims surrounding whitespace", () => {
@@ -20,5 +20,23 @@ describe("contentBlockTextSchema", () => {
 
   it("requires a key", () => {
     expect(contentBlockTextSchema.safeParse({ key: "", text: "x" }).success).toBe(false);
+  });
+});
+
+describe("contentBlockRichSchema", () => {
+  const doc = {
+    type: "doc",
+    content: [{ type: "paragraph", content: [{ type: "text", text: "Hi" }] }],
+  };
+
+  it("accepts editor JSON", () => {
+    const r = contentBlockRichSchema.parse({ key: "about.intro", rich: JSON.stringify(doc) });
+    expect(r.rich).toEqual(doc);
+  });
+
+  it("rejects an empty document", () => {
+    const r = contentBlockRichSchema.safeParse({ key: "about.intro", rich: "" });
+    expect(r.success).toBe(false);
+    expect(r.error?.issues[0]?.path).toEqual(["rich"]);
   });
 });

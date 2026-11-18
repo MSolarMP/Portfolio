@@ -1,4 +1,5 @@
 import "server-only";
+import { readRichDoc } from "@/lib/rich-text";
 import type { Stat } from "@/lib/schemas/interest";
 import { db } from "@/server/db";
 
@@ -37,7 +38,7 @@ export async function getInterest(id: string) {
     },
   });
   if (!row) return null;
-  return { ...row, stats: readStats(row.stats) };
+  return { ...row, stats: readStats(row.stats), body: readRichDoc(row.body) };
 }
 
 /** `stats` is a JSON column; keep only well-formed `{ label, value }` entries. */

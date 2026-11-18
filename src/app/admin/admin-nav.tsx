@@ -12,7 +12,7 @@ const groups: { title: string; items: Item[] }[] = [
       { label: "Overview", href: "/admin", ready: true },
       { label: "Pages & copy", href: "/admin/pages", ready: true },
       { label: "Side quests", href: "/admin/side-quests", ready: true },
-      { label: "Quests (case studies)", href: "/admin/quests", ready: false },
+      { label: "Quests (case studies)", href: "/admin/quests", ready: true },
       { label: "Chronicle", href: "/admin/chronicle", ready: false },
       { label: "Skills", href: "/admin/skills", ready: false },
       { label: "Commendations", href: "/admin/commendations", ready: false },

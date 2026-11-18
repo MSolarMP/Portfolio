@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { listInterests } from "@/server/content/interests";
 import { SideQuestsTable } from "./side-quests-table";
 
 export const metadata: Metadata = { title: "Side quests" };
 
-export default async function SideQuestsAdmin() {
-  const rows = await listInterests();
-
+export default function SideQuestsAdmin() {
   return (
     <div className="flex max-w-4xl flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -26,15 +26,24 @@ export default async function SideQuestsAdmin() {
         </Link>
       </div>
 
-      <SideQuestsTable
-        // Remount only when rows are added or removed. A reorder re-renders this page too,
-        // and remounting then would drop the table's focus and sort.
-        key={rows
-          .map((r) => r.id)
-          .sort()
-          .join()}
-        initialRows={rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() }))}
-      />
+      <Suspense fallback={<ContentSkeleton label="Loading side quests…" />}>
+        <SideQuestsList />
+      </Suspense>
     </div>
+  );
+}
+
+async function SideQuestsList() {
+  const rows = await listInterests();
+  return (
+    <SideQuestsTable
+      // Remount only when rows are added or removed. A reorder re-renders this page too,
+      // and remounting then would drop the table's focus and sort.
+      key={rows
+        .map((r) => r.id)
+        .sort()
+        .join()}
+      initialRows={rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() }))}
+    />
   );
 }

@@ -130,6 +130,74 @@
   }
 }
 
+/* Rich text (Tiptap JSON): the admin editor now, the public renderer later. No typography plugin. */
+@layer components {
+  .rich-text {
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  .rich-text > * + * {
+    margin-top: 0.75em;
+  }
+  .rich-text h2,
+  .rich-text h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.25;
+    margin-top: 1.25em;
+  }
+  .rich-text h2 {
+    font-size: 1.375rem;
+  }
+  .rich-text h3 {
+    font-size: 1.125rem;
+  }
+  .rich-text ul {
+    list-style: disc;
+    padding-left: 1.5em;
+  }
+  .rich-text ol {
+    list-style: decimal;
+    padding-left: 1.5em;
+  }
+  .rich-text li > * + * {
+    margin-top: 0.25em;
+  }
+  .rich-text blockquote {
+    border-left: 3px solid var(--color-bronze);
+    padding-left: 1em;
+    font-style: italic;
+    color: var(--color-ink-faded);
+  }
+  .rich-text a {
+    text-decoration: underline;
+  }
+  .rich-text code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--color-aged);
+    border-radius: 3px;
+    padding: 0.1em 0.3em;
+  }
+  .rich-text pre {
+    background: var(--color-leather);
+    color: var(--color-on-leather);
+    border-radius: 4px;
+    padding: 0.75em 1em;
+    overflow-x: auto;
+  }
+  .rich-text pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+  .rich-text hr {
+    border: 0;
+    border-top: 1px solid var(--color-rule);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

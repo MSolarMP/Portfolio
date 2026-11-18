@@ -5,20 +5,20 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import { type ActionState, invalid, success } from "@/lib/action-state";
 import { tags } from "@/lib/cache-tags";
-import {
-  type InterestInput,
-  interestFormValues,
-  interestSchema,
-  reorderSchema,
-} from "@/lib/schemas/interest";
+import { type InterestInput, interestFormValues, interestSchema } from "@/lib/schemas/interest";
+import { isSameSet, reorderSchema } from "@/lib/schemas/reorder";
 import { requireAdmin } from "@/server/authz";
-import { db } from "@/server/db";
+import { db, jsonOrNull } from "@/server/db";
 
 const LIST = "/admin/side-quests";
 
-/** Prisma data for the fields the editor owns. Empty stats are stored as NULL. */
+/** Prisma data for the fields the editor owns. Empty stats and body are stored as NULL. */
 function toData(input: InterestInput) {
-  return { ...input, stats: input.stats.length ? input.stats : Prisma.DbNull };
+  return {
+    ...input,
+    body: jsonOrNull(input.body),
+    stats: jsonOrNull(input.stats.length ? input.stats : null),
+  };
 }
 
 function isSlugTaken(err: unknown) {
@@ -95,11 +95,11 @@ export async function reorderInterests(ids: string[]): Promise<ActionState> {
   if (!parsed.success) return { status: "error", message: "That order couldn't be read." };
 
   const current = await db.interest.findMany({ select: { id: true } });
-  const given = new Set(parsed.data.ids);
   if (
-    given.size !== parsed.data.ids.length ||
-    given.size !== current.length ||
-    current.some((r) => !given.has(r.id))
+    !isSameSet(
+      parsed.data.ids,
+      current.map((r) => r.id),
+    )
   ) {
     return { status: "error", message: "The list changed in another tab. Reload and try again." };
   }

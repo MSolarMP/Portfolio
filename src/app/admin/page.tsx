@@ -1,10 +1,29 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getSession } from "@/server/authz";
 import { db } from "@/server/db";
+import { AdminSkeleton } from "./admin-skeleton";
 
 export const metadata: Metadata = { title: "Overview" };
 
-export default async function AdminOverview() {
+export default function AdminOverview() {
+  return (
+    <div className="flex flex-col gap-6">
+      <Suspense fallback={<AdminSkeleton />}>
+        <Overview />
+      </Suspense>
+
+      <div className="bg-vellum border-rule rounded border px-5 py-4">
+        <h2 className="font-display text-base font-bold">Coming next</h2>
+        <p className="text-ink-faded">
+          Editors for the Chronicle, skills, commendations and the Media vault.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+async function Overview() {
   const [session, draftQuests, draftInterests, quests, interests, messages] = await Promise.all([
     getSession(),
     db.quest.count({ where: { status: "DRAFT" } }),
@@ -22,7 +41,7 @@ export default async function AdminOverview() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <div>
         <span className="text-ink-faded text-sm">The Archive</span>
         <h1 className="font-display text-3xl font-bold text-balance wrap-break-word">
@@ -42,13 +61,6 @@ export default async function AdminOverview() {
           </div>
         ))}
       </dl>
-
-      <div className="bg-vellum border-rule rounded border px-5 py-4">
-        <h2 className="font-display text-base font-bold">Coming next</h2>
-        <p className="text-ink-faded">
-          Editors for page copy, quests, side quests, the chronicle, skills and the media vault.
-        </p>
-      </div>
-    </div>
+    </>
   );
 }
