@@ -1,17 +1,15 @@
 import "server-only";
-import { Resend } from "resend";
 
 type Email = { to: string; subject: string; html: string; text: string };
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
 /**
- * Sends a transactional email through Resend.
+ * Sends a transactional email through Resend's REST API (one POST, no SDK).
  * Without RESEND_API_KEY (local development) the email is printed to the
  * server console instead, so sign-in links still work offline.
  */
 export async function sendEmail({ to, subject, html, text }: Email) {
-  if (!resend) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     if (process.env.NODE_ENV === "production") {
       throw new Error("RESEND_API_KEY is not set — cannot send email in production.");
     }
@@ -19,14 +17,19 @@ export async function sendEmail({ to, subject, html, text }: Email) {
     return;
   }
 
-  const { error } = await resend.emails.send({
-    from: process.env.EMAIL_FROM ?? "Matthew Pearce <hello@mattcreates.co.za>",
-    to,
-    subject,
-    html,
-    text,
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: process.env.EMAIL_FROM ?? "Matthew Pearce <hello@mattcreates.co.za>",
+      to,
+      subject,
+      html,
+      text,
+    }),
+    signal: AbortSignal.timeout(10_000),
   });
-  if (error) throw new Error(`Email failed: ${error.message}`);
+  if (!res.ok) throw new Error(`Email failed: ${res.status} ${await res.text()}`);
 }
 
 export function magicLinkEmail(url: string) {

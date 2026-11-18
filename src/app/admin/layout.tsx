@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SignOutButton } from "@/components/sign-out-button";
 import { requireAdmin } from "@/server/authz";
-import { AdminNav } from "./admin-nav";
+import { AdminNav, NavList } from "./admin-nav";
 import { AdminSkeleton } from "./admin-skeleton";
 
 export const metadata: Metadata = {
@@ -33,7 +33,9 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
             <span className="text-on-leather-muted text-sm">Content console</span>
           </span>
         </Link>
-        <AdminNav />
+        <Suspense fallback={<NavList pathname={null} />}>
+          <AdminNav />
+        </Suspense>
         <div className="border-gold-thread/35 mt-auto flex flex-col gap-3 border-t px-2.5 pt-4">
           <Link
             href="/"

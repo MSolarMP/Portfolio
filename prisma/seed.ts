@@ -5,9 +5,12 @@
  *
  *   npx prisma db seed
  */
-import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient, type BlockType } from "../src/generated/prisma/client";
+
+try {
+  process.loadEnvFile(); // Node's built-in .env loader; skipped when there's no .env
+} catch {}
 
 const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
 if (!connectionString) throw new Error("Set DIRECT_URL (or DATABASE_URL) before seeding.");

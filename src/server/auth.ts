@@ -25,10 +25,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
   };
 }
 
-export const enabledProviders = {
-  github: Boolean(socialProviders.github),
-  magicLink: true,
-};
+export const enabledProviders = { github: Boolean(socialProviders.github) };
 
 const turnstile = process.env.TURNSTILE_SECRET_KEY
   ? [

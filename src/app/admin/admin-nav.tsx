@@ -10,8 +10,8 @@ const groups: { title: string; items: Item[] }[] = [
     title: "Content",
     items: [
       { label: "Overview", href: "/admin", ready: true },
-      { label: "Pages & copy", href: "/admin/pages", ready: false },
-      { label: "Side quests", href: "/admin/side-quests", ready: false },
+      { label: "Pages & copy", href: "/admin/pages", ready: true },
+      { label: "Side quests", href: "/admin/side-quests", ready: true },
       { label: "Quests (case studies)", href: "/admin/quests", ready: false },
       { label: "Chronicle", href: "/admin/chronicle", ready: false },
       { label: "Skills", href: "/admin/skills", ready: false },
@@ -32,9 +32,13 @@ const groups: { title: string; items: Item[] }[] = [
   },
 ];
 
+/** The sidebar nav with the current page highlighted. Render inside <Suspense> (it reads the URL). */
 export function AdminNav() {
-  const pathname = usePathname();
+  return <NavList pathname={usePathname()} />;
+}
 
+/** The nav itself. `pathname = null` highlights nothing: the Suspense fallback while the URL streams in. */
+export function NavList({ pathname }: { pathname: string | null }) {
   return (
     <nav aria-label="Admin" className="flex flex-col gap-5">
       {groups.map((group) => (
@@ -44,7 +48,9 @@ export function AdminNav() {
           </span>
           {group.items.map((item) => {
             const active =
-              item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : Boolean(pathname?.startsWith(item.href));
             if (!item.ready) {
               return (
                 <span

@@ -2,11 +2,28 @@
 
 import { useSearchParams } from "next/navigation";
 import { startTransition, useState, useTransition, ViewTransition, type FormEvent } from "react";
-import { authClient } from "@/lib/auth-client";
 import { safeNext } from "@/lib/safe-next";
 
-type Providers = { github: boolean; magicLink: boolean };
+type Providers = { github: boolean };
 type Failure = { source: "magic" | "social"; message: string };
+
+/**
+ * POSTs to a Better Auth endpoint. Two plain fetches replace Better Auth's browser
+ * client, so the sign-in page ships no auth library. Errors come back as `{ message }`.
+ */
+async function authPost<T>(path: string, body: object): Promise<{ data?: T; error?: string }> {
+  try {
+    const res = await fetch(`/api/auth${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json().catch(() => null);
+    return res.ok ? { data: json as T } : { error: json?.message || undefined };
+  } catch {
+    return { error: "You seem to be offline. Check your connection and try again." };
+  }
+}
 
 export function SignInForm({ providers }: { providers: Providers }) {
   const params = useSearchParams();
@@ -27,11 +44,16 @@ export function SignInForm({ providers }: { providers: Providers }) {
   function social(provider: "github") {
     setFailure(null);
     startPending(async () => {
-      const { error } = await authClient.signIn.social({ provider, callbackURL: next });
-      if (error) {
+      const { data, error } = await authPost<{ url: string }>("/sign-in/social", {
+        provider,
+        callbackURL: next,
+      });
+      if (data?.url) {
+        window.location.assign(data.url); // off to GitHub
+      } else {
         setFailure({
           source: "social",
-          message: error.message ?? "That sign-in didn't go through. Try again, or use email.",
+          message: error ?? "That sign-in didn't go through. Try again, or use email.",
         });
       }
     });
@@ -41,12 +63,11 @@ export function SignInForm({ providers }: { providers: Providers }) {
     e.preventDefault();
     setFailure(null);
     startPending(async () => {
-      const { error } = await authClient.signIn.magicLink({ email, callbackURL: next });
-      if (error) {
+      const { data, error } = await authPost("/sign-in/magic-link", { email, callbackURL: next });
+      if (!data) {
         setFailure({
           source: "magic",
-          message:
-            error.message ?? "The letter couldn't be sent. Check the address and send again.",
+          message: error ?? "The letter couldn't be sent. Check the address and send again.",
         });
       } else {
         // Updates after an await need their own transition to animate.

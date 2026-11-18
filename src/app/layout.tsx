@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import {
-  Alegreya_Sans,
-  Cinzel,
-  EB_Garamond,
-  JetBrains_Mono,
-  Noto_Serif_JP,
-} from "next/font/google";
+import { Alegreya_Sans, Cinzel, EB_Garamond, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["700", "800"], // only bold (text) and extra-bold (wax seals) are used
 });
 const garamond = EB_Garamond({
   variable: "--font-garamond",
@@ -21,12 +15,7 @@ const garamond = EB_Garamond({
 const alegreyaSans = Alegreya_Sans({
   variable: "--font-alegreya-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-});
-const notoSerifJp = Noto_Serif_JP({
-  variable: "--font-noto-serif-jp",
-  weight: ["600"],
-  preload: false,
+  weight: ["400", "700"],
 });
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
@@ -43,13 +32,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const fonts = [cinzel, garamond, alegreyaSans, notoSerifJp, jetbrainsMono]
-    .map((f) => f.variable)
-    .join(" ");
+  const fonts = [cinzel, garamond, alegreyaSans, jetbrainsMono].map((f) => f.variable).join(" ");
 
   return (
     <html lang="en" className={`${fonts} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      {/* Browser extensions (e.g. ColorZilla) add attributes to <body> before hydration.
+          This only silences mismatches on body's own attributes, not its children. */}
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
