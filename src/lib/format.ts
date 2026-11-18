@@ -38,3 +38,15 @@ const dateTimeFormat = new Intl.DateTimeFormat("en-ZA", {
   minute: "2-digit",
   timeZone: "Africa/Johannesburg",
 });
+
+// Chronicle dates are stored as the 1st of the month at UTC midnight, so format them in UTC.
+const monthFormat = new Intl.DateTimeFormat("en-ZA", {
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+/** "Apr 2025 – Aug 2026", or "Aug 2026 – present" when there's no end date. */
+export function formatMonthRange(start: Date, end: Date | null) {
+  return `${monthFormat.format(start)} – ${end ? monthFormat.format(end) : "present"}`;
+}

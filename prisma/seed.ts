@@ -51,6 +51,35 @@ const blocks: { key: string; page: string; label: string; text: string; type?: B
     text: "Guild Engineer",
   },
   { key: "home.sheet.home", page: "home", label: "Home town", text: "Gqeberha" },
+  { key: "home.hero.cta", page: "home", label: "Hero main button", text: "Begin the adventure" },
+  { key: "home.hero.cta2", page: "home", label: "Hero second button", text: "Send a Raven" },
+  { key: "home.skills.eyebrow", page: "home", label: "Skills eyebrow", text: "Character sheet" },
+  { key: "home.skills.title", page: "home", label: "Skills heading", text: "Ability Scores" },
+  {
+    key: "home.quests.eyebrow",
+    page: "home",
+    label: "Featured quests eyebrow",
+    text: "From the quest board",
+  },
+  {
+    key: "home.quests.title",
+    page: "home",
+    label: "Featured quests heading",
+    text: "Legendary Quests",
+  },
+  {
+    key: "home.chronicle.eyebrow",
+    page: "home",
+    label: "Chronicle eyebrow",
+    text: "Recent chapters",
+  },
+  { key: "home.chronicle.title", page: "home", label: "Chronicle heading", text: "The Chronicle" },
+  {
+    key: "home.raven.eyebrow",
+    page: "home",
+    label: "Raven CTA eyebrow",
+    text: "Seeking a party member?",
+  },
   { key: "home.raven.title", page: "home", label: "Raven CTA title", text: "Send a Raven" },
   {
     key: "home.raven.body",
@@ -58,6 +87,7 @@ const blocks: { key: string; page: string; label: string; text: string; type?: B
     label: "Raven CTA body",
     text: "Open to [ROLE TYPE] roles. Your message reaches my inbox and my phone within minutes.",
   },
+  { key: "home.raven.cta", page: "home", label: "Raven CTA button", text: "Write a message" },
   { key: "about.title", page: "about", label: "Page title", text: "Side Quests" },
   {
     key: "about.tagline",

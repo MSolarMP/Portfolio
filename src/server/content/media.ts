@@ -19,6 +19,57 @@ function variantUrl(variants: VariantMap, format: VariantFormat, maxWidth: numbe
   return pick ? publicUrl(pick[1]) : null;
 }
 
+/** What the public site needs to draw one image as a responsive <picture>. */
+export type PublicImage = {
+  avifSrcSet: string;
+  webpSrcSet: string;
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+  blurData: string | null;
+};
+
+/** Columns to select for `toPublicImage()`. */
+export const publicImageSelect = {
+  state: true,
+  variants: true,
+  width: true,
+  height: true,
+  alt: true,
+  blurData: true,
+} as const;
+
+/** A READY image with its variants as srcsets, or null if it can't be shown. */
+export function toPublicImage(
+  media: {
+    state: string;
+    variants: unknown;
+    width: number | null;
+    height: number | null;
+    alt: string | null;
+    blurData: string | null;
+  } | null,
+): PublicImage | null {
+  if (!media || media.state !== "READY" || !media.width || !media.height) return null;
+  const variants = readVariants(media.variants);
+  const srcSet = (format: VariantFormat) =>
+    Object.entries(variants[format] ?? {})
+      .map(([w, path]) => `${publicUrl(path)} ${w}w`)
+      .join(", ");
+  const src = variantUrl(variants, "webp", 1280);
+  if (!src) return null;
+  return {
+    avifSrcSet: srcSet("avif"),
+    webpSrcSet: srcSet("webp"),
+    src,
+    width: media.width,
+    height: media.height,
+    alt: media.alt ?? "",
+    blurData: media.blurData,
+  };
+}
+
 /** Admin: the vault grid, newest first. */
 export async function listMedia() {
   const rows = await db.media.findMany({

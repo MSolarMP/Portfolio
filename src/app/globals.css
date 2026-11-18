@@ -39,6 +39,21 @@
   --font-serif: var(--font-garamond), Georgia, serif;
   --font-sans: var(--font-alegreya-sans), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --animate-rise: rise 0.8s ease-out both;
+  --animate-glow: glow 3.5s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @keyframes glow {
+    50% {
+      box-shadow: 0 0 34px rgb(212 168 75 / 0.45);
+    }
+  }
 }
 
 @layer base {
@@ -120,6 +135,52 @@
     background-image: radial-gradient(ellipse at 30% 20%, rgb(212 168 75 / 0.1), transparent 50%);
     color: var(--color-on-leather);
   }
+  /* Dashed gold "stitching" just inside a leather panel */
+  .stitch {
+    outline: 1px dashed rgb(212 168 75 / 0.55);
+    outline-offset: -8px;
+  }
+
+  /* Public buttons (links styled as buttons). Primary = oxblood wax; secondary = vellum. */
+  .btn-seal,
+  .btn-vellum {
+    display: inline-flex;
+    min-height: 50px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 26px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+  .btn-seal,
+  .btn-seal:hover {
+    background: var(--color-oxblood);
+    color: var(--color-vellum);
+    border: 1px solid var(--color-oxblood-deep);
+    box-shadow:
+      inset 0 0 0 3px var(--color-oxblood),
+      inset 0 0 0 4px rgb(247 238 218 / 0.35);
+  }
+  .btn-seal:hover {
+    background: var(--color-oxblood-dark);
+    box-shadow:
+      inset 0 0 0 3px var(--color-oxblood-dark),
+      inset 0 0 0 4px rgb(247 238 218 / 0.35);
+  }
+  .btn-vellum,
+  .btn-vellum:hover {
+    background: var(--color-vellum);
+    color: var(--color-ink);
+    border: 1px solid var(--color-bronze);
+  }
+  .btn-vellum:hover {
+    background: var(--color-vellum-light);
+  }
+
   .label-caps {
     font-family: var(--font-display);
     font-weight: 700;
@@ -205,7 +266,8 @@ html[data-view="plain"] {
   .leather {
     background-image: none;
   }
-  .ledger-card {
+  .ledger-card,
+  .stitch {
     outline: none;
     box-shadow: none;
   }

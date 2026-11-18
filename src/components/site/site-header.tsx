@@ -28,7 +28,7 @@ export async function SiteHeader() {
         </Link>
 
         {/* Below lg the nav drops to its own full-width row (and wraps on narrow phones). */}
-        <div className="order-last w-full min-w-0 lg:order-none lg:w-auto">
+        <div className="order-last w-full min-w-0 lg:order-0 lg:w-auto">
           <Suspense fallback={<SiteNavList pathname={null} />}>
             <SiteNav />
           </Suspense>
