@@ -181,6 +181,17 @@
     background: var(--color-vellum-light);
   }
 
+  /* Illuminated first letter for intro paragraphs */
+  .drop-cap::first-letter {
+    float: left;
+    padding: 6px 10px 0 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 3.4em;
+    line-height: 0.9;
+    color: var(--color-oxblood);
+  }
+
   .label-caps {
     font-family: var(--font-display);
     font-weight: 700;
@@ -275,6 +286,12 @@ html[data-view="plain"] {
   .gem::after,
   [data-decor] {
     display: none;
+  }
+  .drop-cap::first-letter {
+    float: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
   }
   *,
   *::before,
