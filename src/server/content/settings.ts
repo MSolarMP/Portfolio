@@ -1,4 +1,6 @@
 import "server-only";
+import { cacheLife, cacheTag } from "next/cache";
+import { tags } from "@/lib/cache-tags";
 import { readSettings, SETTING_DEFAULTS } from "@/lib/schemas/settings";
 import { db } from "@/server/db";
 
@@ -9,4 +11,12 @@ export async function getSettings() {
     select: { key: true, value: true },
   });
   return readSettings(rows);
+}
+
+/** Public: the same settings, cached until the Settings page saves. None of them are private. */
+export async function getPublicSettings() {
+  "use cache";
+  cacheLife("max");
+  cacheTag(tags.settings);
+  return getSettings();
 }

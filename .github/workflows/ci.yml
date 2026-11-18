@@ -12,6 +12,19 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # Public pages are prerendered from the database at build time, so the build
+    # needs a real Postgres: migrated and seeded with the starter content.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
     steps:
       - uses: actions/checkout@v4
 
@@ -35,10 +48,17 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Database
+        # The Data API lock-down migration revokes from Supabase's `anon`/`authenticated` roles.
+        run: |
+          psql "$DIRECT_URL" -c "CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN;"
+          npx prisma migrate deploy
+          npx prisma db seed
+
       - name: Build
         run: npm run build
         env:
           # Placeholders so Better Auth doesn't log config errors while pages are collected.
-          # The build never queries the database or signs anything; real values live in Vercel.
+          # The build never signs anything; real values live in Vercel.
           BETTER_AUTH_SECRET: ci-build-placeholder-not-used-at-runtime-000000
           BETTER_AUTH_URL: http://localhost:3000

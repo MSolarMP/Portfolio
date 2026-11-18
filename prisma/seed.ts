@@ -86,6 +86,13 @@ const blocks: { key: string; page: string; label: string; text: string; type?: B
     label: "Introduction",
     text: "Roles, freelance work or just a hello. Write your letter below and seal it.",
   },
+  { key: "global.site.name", page: "global", label: "Site name", text: "Matthew Pearce" },
+  {
+    key: "global.site.role",
+    page: "global",
+    label: "Role under the name",
+    text: "Full stack engineer",
+  },
   {
     key: "global.footer.blurb",
     page: "global",

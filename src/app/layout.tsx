@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Alegreya_Sans, Cinzel, EB_Garamond, JetBrains_Mono } from "next/font/google";
+import { plainViewScript } from "@/lib/plain-view";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -35,7 +36,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   const fonts = [cinzel, garamond, alegreyaSans, jetbrainsMono].map((f) => f.variable).join(" ");
 
   return (
-    <html lang="en" className={`${fonts} h-full antialiased`}>
+    // suppressHydrationWarning: the inline script may add data-view="plain" before React hydrates.
+    <html lang="en" className={`${fonts} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: plainViewScript }} />
+      </head>
       {/* Browser extensions (e.g. ColorZilla) add attributes to <body> before hydration.
           This only silences mismatches on body's own attributes, not its children. */}
       <body className="flex min-h-full flex-col" suppressHydrationWarning>

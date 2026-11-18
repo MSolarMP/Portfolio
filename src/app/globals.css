@@ -198,6 +198,30 @@
   }
 }
 
+/* Plain view (<html data-view="plain">, toggled in the site header): same palette and type,
+   no decoration. Mark decoration-only elements with `data-decor` so it can hide them too. */
+html[data-view="plain"] {
+  body,
+  .leather {
+    background-image: none;
+  }
+  .ledger-card {
+    outline: none;
+    box-shadow: none;
+  }
+  .gem::before,
+  .gem::after,
+  [data-decor] {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
