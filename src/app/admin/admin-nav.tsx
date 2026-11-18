@@ -28,7 +28,7 @@ const groups: { title: string; items: Item[] }[] = [
   },
   {
     title: "System",
-    items: [{ label: "Settings", href: "/admin/settings", ready: false }],
+    items: [{ label: "Settings", href: "/admin/settings", ready: true }],
   },
 ];
 

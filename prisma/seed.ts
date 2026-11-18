@@ -264,10 +264,10 @@ const interests = [
   { slug: "exploring", title: "Exploring", attribute: "Wanderlust", featured: false, order: 4 },
 ];
 
+// Only settings the admin edits (see src/lib/schemas/settings.ts). Existing values are never overwritten.
 const settings: Record<string, unknown> = {
   openToWork: true,
-  roleType: "[ROLE TYPE]",
-  features: { duel: false, sound: false },
+  githubUrl: "https://github.com/MSolarMP",
 };
 
 async function main() {

@@ -11,6 +11,7 @@ import type { VariantMap } from "@/server/content/media";
 import { db } from "@/server/db";
 import { processImage, type ProcessedImage } from "@/server/media/process";
 import { buckets, putObject, removeObjects } from "@/server/media/storage";
+import { allow, limits, retryMessage } from "@/server/ratelimit";
 
 const VAULT = "/admin/media";
 
@@ -34,7 +35,15 @@ function refresh() {
  * If any storage write fails, whatever was written is removed again.
  */
 export async function uploadMedia(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireAdmin(VAULT);
+  const { user } = await requireAdmin(VAULT);
+
+  const limit = await allow(limits.upload, user.id);
+  if (!limit.ok) {
+    return {
+      status: "error",
+      message: `That's a lot of uploads in one hour. ${retryMessage(limit.retryAfterSeconds)}`,
+    };
+  }
 
   const file = formData.get("file");
   const fileError = imageFileError(file);

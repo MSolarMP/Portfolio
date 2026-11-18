@@ -17,6 +17,7 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Media           | Supabase Storage (AVIF/WebP variants made with sharp, metadata stripped) |
 | Background jobs | Next.js `after()`; a durable queue arrives with SMS                      |
 | Email / SMS     | Resend · SMS Portal                                                      |
+| Rate limiting   | Upstash Redis (hashed keys; fails open)                                  |
 | Edge            | Vercel hosting · Cloudflare DNS, Turnstile                               |
 | Testing         | Vitest · GitHub Actions                                                  |
 
@@ -31,6 +32,7 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Side quests   | Hobbies: cover image, tagline, attribute, stats and story                                            |
 | Chronicle     | Work history: dates, summary, ordered highlights, stack                                              |
 | Skills        | The skill tree, by category, edited inline                                                           |
+| Settings      | Open to work, role type, GitHub and LinkedIn links                                                   |
 | Ravens        | Contact messages: unread/archived, reply in your own mail app                                        |
 | Commendations | LinkedIn recommendations, each linking back to the original                                          |
 | Media vault   | Display images (profile photo, screenshots, diagrams): AVIF/WebP copies, metadata stripped, alt text |
