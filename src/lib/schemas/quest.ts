@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { richTextField } from "@/lib/rich-text";
-import { optionalText, slugField, stackField } from "./fields";
+import { optionalHttpsUrl, optionalText, slugField, stackField } from "./fields";
 
 export const SUMMARY_MAX = 300;
 
@@ -32,13 +32,6 @@ export const QUEST_SECTIONS = [
 
 export type QuestSection = (typeof QUEST_SECTIONS)[number]["key"];
 
-const optionalUrl = z
-  .string()
-  .trim()
-  .max(500)
-  .refine((v) => !v || /^https:\/\/[^\s]+\.[^\s]+$/i.test(v), "Use a full https:// address.")
-  .transform((v) => v || null);
-
 const sectionFields = Object.fromEntries(QUEST_SECTIONS.map((s) => [s.key, richTextField])) as {
   [K in QuestSection]: typeof richTextField;
 };
@@ -57,8 +50,8 @@ export const questSchema = z.object({
     .min(1, "Write a one-line summary.")
     .max(SUMMARY_MAX, `Keep it under ${SUMMARY_MAX} characters.`),
   stack: stackField,
-  repoUrl: optionalUrl,
-  liveUrl: optionalUrl,
+  repoUrl: optionalHttpsUrl(),
+  liveUrl: optionalHttpsUrl(),
   chapterId: z
     .string()
     .max(100)

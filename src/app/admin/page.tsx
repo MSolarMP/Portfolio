@@ -16,7 +16,7 @@ export default function AdminOverview() {
       <div className="bg-vellum border-rule rounded border px-5 py-4">
         <h2 className="font-display text-base font-bold">Coming next</h2>
         <p className="text-ink-faded">
-          Editors for the Chronicle, skills, commendations and the Media vault.
+          The Media vault (photo and diagram uploads), then the Ravens inbox and site settings.
         </p>
       </div>
     </div>

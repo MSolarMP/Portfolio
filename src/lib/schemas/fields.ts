@@ -40,6 +40,22 @@ export function optionalText(max: number) {
     .transform((v) => v || null);
 }
 
+/**
+ * An optional https link; blank becomes null. Pass `pattern` to narrow it further,
+ * e.g. to linkedin.com addresses.
+ */
+export function optionalHttpsUrl(
+  pattern = /^https:\/\/[^\s/]+\.[^\s]+$/i,
+  message = "Use a full https:// address.",
+) {
+  return z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => !v || pattern.test(v), message)
+    .transform((v) => v || null);
+}
+
 /** "Next.js, Tailwind CSS ,  next.js" → ["Next.js", "Tailwind CSS"] (case-insensitive de-dupe). */
 export function parseStack(raw: string): string[] {
   const seen = new Set<string>();

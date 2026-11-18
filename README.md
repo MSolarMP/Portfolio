@@ -9,14 +9,32 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Layer           | Choice                                                                  |
 | --------------- | ----------------------------------------------------------------------- |
 | Framework       | Next.js (App Router, Cache Components) · TypeScript                     |
-| Styling         | Tailwind CSS                                                            |
+| Styling         | Tailwind CSS · hand-built components (no UI library)                    |
 | Database        | PostgreSQL on Supabase · Prisma ORM                                     |
 | Auth            | Better Auth — owner-only sign-in (magic link, GitHub)                   |
+| Validation      | Zod — one schema per entity, shared by forms and server actions         |
+| Rich text       | Tiptap, stored as allow-listed JSON                                     |
 | Media           | Cloudflare R2 (presigned uploads, AVIF/WebP variants, EXIF without GPS) |
 | Background jobs | Next.js `after()`; a durable queue arrives with SMS                     |
 | Email / SMS     | Resend · SMS Portal                                                     |
 | Edge            | Vercel hosting · Cloudflare DNS, Turnstile                              |
 | Testing         | Vitest · GitHub Actions                                                 |
+
+## Admin portal
+
+`/admin` is where every piece of public content is written. It is built with plain React, Tailwind and native HTML (`<dialog>`, `<form>`, server actions), with no component library.
+
+| Section       | What it edits                                                             |
+| ------------- | ------------------------------------------------------------------------- |
+| Pages & copy  | Every line of site text, plain or rich                                    |
+| Quests        | Case studies: summary, stack, links, chapter and seven rich-text sections |
+| Side quests   | Hobbies: tagline, attribute, stats and story                              |
+| Chronicle     | Work history: dates, summary, ordered highlights, stack                   |
+| Skills        | The skill tree, by category, edited inline                                |
+| Commendations | LinkedIn recommendations, each linking back to the original               |
+| Media vault   | _In progress:_ uploads to R2 with AVIF/WebP variants                      |
+
+Every save follows the same path: check the owner's session → validate with Zod → write with Prisma → refresh only the affected cache tags. Lists can be sorted and reordered by drag or keyboard; rich text is cleaned against an allow-list on the server, so only known formatting and safe links are stored.
 
 ## How content is served
 
@@ -51,8 +69,9 @@ To sign in to the admin (`/admin`), set `BETTER_AUTH_SECRET` and put your email 
 ```
 prisma/            schema, migrations, seed
 src/app/           routes — public site, /admin, API handlers
-src/server/        server-only code: database, auth, services
-src/lib/           shared utilities, schemas, cache tags
+src/components/    UI components (admin/ today, site/ with the public pages)
+src/server/        server-only code: database, auth, queries
+src/lib/           shared, framework-free code: Zod schemas, rich-text allow-list, cache tags
 ```
 
 ## Architecture
@@ -76,6 +95,8 @@ One Next.js app. Public pages render from the database inside cached functions; 
 | One app (modular monolith), not separate admin/API services                       | One developer, low traffic: one deploy and one auth system. Split when a second app exists.                                                            |
 | Supabase as plain Postgres, accessed only through Prisma                          | One typed data path. The public Data API is locked (RLS on, no policies, privileges revoked).                                                          |
 | Sign-in is for the owner only (Better Auth: magic link, GitHub; email allow-list) | Visitors never need an account, so no personal data is collected. No passwords stored. Checked in the proxy, the admin layout and every server action. |
+| No UI component library; admin components written in plain React + Tailwind       | Every component is understood and owned; native `<dialog>` and form elements cover accessibility.                                                      |
+| Rich text stored as Tiptap JSON and cleaned against an allow-list on save         | The public renderer only ever sees known nodes and safe links, so no raw HTML is ever injected.                                                        |
 | Database-driven content with tag-based caching                                    | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                               |
 | Media in Cloudflare R2: private originals, public variants                        | 10 GB free with no egress fees; GPS stripped before anything is public.                                                                                |
 | `after()` for background work; a queue only once SMS needs retries                | No infrastructure before a workload needs it.                                                                                                          |
