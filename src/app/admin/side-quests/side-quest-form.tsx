@@ -10,10 +10,13 @@ import { MediaPicker } from "@/components/admin/media-picker";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { Status } from "@/generated/prisma/enums";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
-import { slugify } from "@/lib/schemas/fields";
-import { type Stat, STATS_MAX, TAGLINE_MAX } from "@/lib/schemas/interest";
-import type { MediaOption } from "@/server/content/media";
-import { createInterest, updateInterest } from "./actions";
+import { slugify } from "@/lib/validation/fields";
+import {
+  createSideQuestAction,
+  updateSideQuestAction,
+} from "@/modules/side-quests/side-quests.actions";
+import { type Stat, STATS_MAX, TAGLINE_MAX } from "@/modules/side-quests/side-quests.schema";
+import type { MediaOption } from "@/modules/media";
 
 export type Values = {
   title: string;
@@ -56,6 +59,21 @@ function normalise(v: Values): Values {
   };
 }
 
+/** The form's values in the shape the side-quest schema expects. */
+function toBody(v: Values) {
+  return {
+    title: v.title,
+    slug: v.slug,
+    tagline: v.tagline,
+    attribute: v.attribute,
+    body: v.body ? (JSON.parse(v.body) as RichDoc) : null,
+    coverId: v.coverId || null,
+    stats: normalise(v).stats,
+    status: v.status,
+    featured: v.featured,
+  };
+}
+
 /**
  * Create (no `id`) or edit (with `id`) a side quest. Fields are controlled so a
  * failed save keeps what you typed, and so the slug can follow the title until you edit it.
@@ -87,8 +105,7 @@ export function SideQuestForm({
   } = useEditorForm<Values>({
     initial,
     normalise: normalise,
-    submit: (prev, formData) =>
-      id ? updateInterest(id, prev, formData) : createInterest(prev, formData),
+    submit: (v) => (id ? updateSideQuestAction(id, toBody(v)) : createSideQuestAction(toBody(v))),
     initialState: justCreated ? createdState() : undefined,
   });
   // New side quests: the slug tracks the title until the Keeper types in the slug box.

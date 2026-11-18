@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { SKILL_CATEGORIES, type SkillCategory } from "@/lib/schemas/skill";
-import { listSkills } from "@/server/content/skills";
+import { SKILL_CATEGORIES, type SkillCategory } from "@/modules/skills/skills.schema";
+import { listSkills } from "@/modules/skills";
 import { AddSkillForm } from "./add-skill-form";
 import { type Row, SkillsTable } from "./skills-table";
 

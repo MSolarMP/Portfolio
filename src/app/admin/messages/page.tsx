@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { excerpt, formatDate } from "@/lib/format";
-import { countMessages, listMessages, type MessageView } from "@/server/content/messages";
+import { countMessages, listMessages, type MessageView } from "@/modules/messages";
 
 export const metadata: Metadata = { title: "Ravens" };
 

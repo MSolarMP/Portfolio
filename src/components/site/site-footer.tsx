@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { copyReader } from "@/lib/copy";
-import { getPageCopy } from "@/server/content/content-blocks";
-import { getPublicSettings } from "@/server/content/settings";
+import { getPageCopy } from "@/modules/content";
+import { getPublicSettings } from "@/modules/settings";
 
 const linkClass = "text-on-leather hover:text-gold-light inline-flex min-h-11 items-center";
 

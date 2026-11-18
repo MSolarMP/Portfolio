@@ -4,15 +4,16 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { DeleteButton } from "@/components/admin/delete-button";
-import { dateToMonth } from "@/lib/schemas/chapter";
-import { getChapter } from "@/server/content/chapters";
-import { deleteChapter } from "../actions";
+import { dateToMonth } from "@/modules/chronicle/chronicle.schema";
+import { getChapter } from "@/modules/chronicle";
+import { orNull } from "@/lib/errors";
+import { deleteChapterAction } from "@/modules/chronicle/chronicle.actions";
 import { ChapterForm } from "../chapter-form";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/admin/chronicle/[id]">): Promise<Metadata> {
-  const chapter = await getChapter((await params).id);
+  const chapter = await orNull(getChapter((await params).id));
   return {
     title: chapter ? `${chapter.role}, ${chapter.company} · Chronicle` : "Chapter not found",
   };
@@ -33,7 +34,7 @@ export default function EditChapter({ params, searchParams }: PageProps<"/admin/
 
 async function Editor({ params, searchParams }: PageProps<"/admin/chronicle/[id]">) {
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
-  const chapter = await getChapter(id);
+  const chapter = await orNull(getChapter(id));
   if (!chapter) notFound();
 
   const linked = chapter._count.quests;
@@ -45,7 +46,7 @@ async function Editor({ params, searchParams }: PageProps<"/admin/chronicle/[id]
           <span className="text-bronze-text">{chapter.numeral}.</span> {chapter.role}
         </h1>
         <DeleteButton
-          action={deleteChapter.bind(null, chapter.id)}
+          action={deleteChapterAction.bind(null, chapter.id)}
           title={`Delete “${chapter.role}, ${chapter.company}”?`}
           description={
             linked

@@ -4,8 +4,8 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/admin/button";
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { type ActionState, idle } from "@/lib/action-state";
-import { CONTENT_TEXT_MAX } from "@/lib/schemas/content-block";
-import { updateContentBlockText } from "./actions";
+import { updateContentTextAction } from "@/modules/content/content.actions";
+import { CONTENT_TEXT_MAX } from "@/modules/content/content.schema";
 
 type Block = { key: string; label: string; text: string };
 
@@ -17,8 +17,8 @@ export function BlockForm({ block }: { block: Block }) {
   const dirty = value !== saved;
 
   const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = await updateContentBlockText(prev, formData);
+    async (_prev: ActionState, formData: FormData) => {
+      const result = await updateContentTextAction(block.key, { text: formData.get("text") });
       if (result.status === "success") {
         // The server trims the text, so mirror that here.
         const text = String(formData.get("text")).trim();
@@ -38,7 +38,6 @@ export function BlockForm({ block }: { block: Block }) {
       action={formAction}
       className="bg-vellum border-rule flex flex-col gap-3 rounded border px-4 py-4 sm:px-5"
     >
-      <input type="hidden" name="key" value={block.key} />
       <FormField
         label={block.label}
         error={textError}

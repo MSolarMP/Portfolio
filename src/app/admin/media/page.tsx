@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { formatBytes } from "@/lib/format";
-import { listMedia } from "@/server/content/media";
+import { listMedia } from "@/modules/media";
 import { UploadForm } from "./upload-form";
 
 export const metadata: Metadata = { title: "Media vault" };

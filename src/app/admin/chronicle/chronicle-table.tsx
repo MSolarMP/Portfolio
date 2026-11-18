@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type Column, DataTable } from "@/components/admin/data-table";
-import { reorderChapters } from "./actions";
+import { reorderChaptersAction } from "@/modules/chronicle/chronicle.actions";
 
 type Row = {
   id: string;
@@ -74,7 +74,7 @@ export function ChronicleTable({ initialRows }: { initialRows: Row[] }) {
       columns={columns}
       getId={(r) => r.id}
       getLabel={(r) => `${r.role}, ${r.company}`}
-      onReorder={reorderChapters}
+      onReorder={reorderChaptersAction}
       empty={
         <>
           No chapters yet. <Link href="/admin/chronicle/new">Add your first job</Link>.

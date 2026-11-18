@@ -3,11 +3,11 @@ import { RichText } from "@/components/site/rich-text";
 import { SiteImage } from "@/components/site/site-image";
 import { copyReader } from "@/lib/copy";
 import { toRoman } from "@/lib/roman";
-import { getPageCopy } from "@/server/content/content-blocks";
-import { getPublishedInterests } from "@/server/content/interests";
+import { getPageCopy } from "@/modules/content";
+import { listPublishedSideQuests } from "@/modules/side-quests";
 import { SideQuestFilter } from "./side-quest-filter";
 
-type SideQuest = Awaited<ReturnType<typeof getPublishedInterests>>[number];
+type SideQuest = Awaited<ReturnType<typeof listPublishedSideQuests>>[number];
 
 const wrap = "mx-auto w-full max-w-300 px-4 sm:px-8";
 
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AboutPage() {
-  const [blocks, quests] = await Promise.all([getPageCopy("about"), getPublishedInterests()]);
+  const [blocks, quests] = await Promise.all([getPageCopy("about"), listPublishedSideQuests()]);
   const t = copyReader(blocks);
   const attributes = quests.filter((q) => q.attribute);
 

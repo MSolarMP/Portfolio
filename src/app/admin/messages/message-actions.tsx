@@ -4,7 +4,11 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/admin/button";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { type ActionState, idle } from "@/lib/action-state";
-import { deleteMessage, setMessageArchived, setMessageRead } from "./actions";
+import {
+  deleteMessageAction,
+  setMessageArchivedAction,
+  setMessageReadAction,
+} from "@/modules/messages/messages.actions";
 
 /**
  * Buttons for one message. Opening an unread message marks it read once, from the
@@ -29,7 +33,7 @@ export function MessageActions({
     if (read || markedOnOpen.current) return;
     markedOnOpen.current = true;
     startTransition(async () => {
-      await setMessageRead(id, true);
+      await setMessageReadAction(id, true);
     });
   }, [id, read]);
 
@@ -42,19 +46,19 @@ export function MessageActions({
       <Button
         variant="secondary"
         disabled={pending}
-        onClick={() => run(() => setMessageArchived(id, !archived))}
+        onClick={() => run(() => setMessageArchivedAction(id, !archived))}
       >
         {archived ? "Move to inbox" : "Archive"}
       </Button>
       <Button
         variant="ghost"
         disabled={pending}
-        onClick={() => run(() => setMessageRead(id, !read))}
+        onClick={() => run(() => setMessageReadAction(id, !read))}
       >
         {read ? "Mark unread" : "Mark read"}
       </Button>
       <DeleteButton
-        action={deleteMessage.bind(null, id)}
+        action={deleteMessageAction.bind(null, id)}
         title={`Delete the message from ${name}?`}
         description="It's gone for good. Archive it instead if you might want it later."
         confirmLabel="Delete message"

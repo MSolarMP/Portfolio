@@ -6,7 +6,7 @@ import { ConfirmDialog } from "./confirm-dialog";
 
 /**
  * Delete + confirmation for one record. Pass a bound server action,
- * e.g. `action={deleteQuest.bind(null, quest.id)}`. It either redirects away
+ * e.g. `action={deleteQuestAction.bind(null, quest.id)}`. It either redirects away
  * or refreshes the page so the record disappears.
  */
 export function DeleteButton({

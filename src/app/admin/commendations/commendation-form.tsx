@@ -5,8 +5,11 @@ import { createdState, useEditorForm } from "@/components/admin/use-editor-form"
 import { SaveBar } from "@/components/admin/save-bar";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { Status } from "@/generated/prisma/enums";
-import { QUOTE_MAX } from "@/lib/schemas/commendation";
-import { createCommendation, updateCommendation } from "./actions";
+import { QUOTE_MAX } from "@/modules/commendations/commendations.schema";
+import {
+  createCommendationAction,
+  updateCommendationAction,
+} from "@/modules/commendations/commendations.actions";
 
 export type Values = {
   quote: string;
@@ -61,8 +64,7 @@ export function CommendationForm({
   const { values, set, dirty, state, formAction, pending, errors, revert } = useEditorForm<Values>({
     initial,
     normalise: normalise,
-    submit: (prev, formData) =>
-      id ? updateCommendation(id, prev, formData) : createCommendation(prev, formData),
+    submit: (v) => (id ? updateCommendationAction(id, v) : createCommendationAction(v)),
     initialState: justCreated ? createdState() : undefined,
   });
 

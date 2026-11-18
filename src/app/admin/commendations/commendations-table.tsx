@@ -5,7 +5,7 @@ import { type Column, DataTable } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { Status } from "@/generated/prisma/enums";
 import { excerpt, formatDate } from "@/lib/format";
-import { reorderCommendations } from "./actions";
+import { reorderCommendationsAction } from "@/modules/commendations/commendations.actions";
 
 type Row = {
   id: string;
@@ -77,7 +77,7 @@ export function CommendationsTable({ initialRows }: { initialRows: Row[] }) {
       columns={columns}
       getId={(r) => r.id}
       getLabel={(r) => `${r.name}'s commendation`}
-      onReorder={reorderCommendations}
+      onReorder={reorderCommendationsAction}
       empty={
         <>
           No commendations yet. <Link href="/admin/commendations/new">Add one from LinkedIn</Link>.

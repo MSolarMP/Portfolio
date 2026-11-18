@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { getSession } from "@/server/authz";
-import { db } from "@/server/db";
+import { getSession } from "@/modules/auth";
+import { countMessages } from "@/modules/messages";
+import { countQuests } from "@/modules/quests";
+import { countSideQuests } from "@/modules/side-quests";
 import { AdminSkeleton } from "./admin-skeleton";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -22,20 +24,18 @@ export default function AdminOverview() {
 }
 
 async function Overview() {
-  const [session, draftQuests, draftInterests, quests, interests, messages] = await Promise.all([
+  const [session, quests, sideQuests, messages] = await Promise.all([
     getSession(),
-    db.quest.count({ where: { status: "DRAFT" } }),
-    db.interest.count({ where: { status: "DRAFT" } }),
-    db.quest.count(),
-    db.interest.count(),
-    db.message.count({ where: { readAt: null } }),
+    countQuests(),
+    countSideQuests(),
+    countMessages(),
   ]);
 
   const stats = [
-    { label: "Unread ravens", value: messages },
-    { label: "Drafts waiting", value: draftQuests + draftInterests },
-    { label: "Quests", value: quests },
-    { label: "Side quests", value: interests },
+    { label: "Unread ravens", value: messages.unread },
+    { label: "Drafts waiting", value: quests.drafts + sideQuests.drafts },
+    { label: "Quests", value: quests.total },
+    { label: "Side quests", value: sideQuests.total },
   ];
 
   return (

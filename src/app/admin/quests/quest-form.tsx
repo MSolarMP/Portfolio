@@ -9,10 +9,10 @@ import { MediaPicker } from "@/components/admin/media-picker";
 import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { QuestKind, Rarity, Status } from "@/generated/prisma/enums";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
-import { parseStack, slugify, STACK_MAX } from "@/lib/schemas/fields";
-import { QUEST_SECTIONS, type QuestSection, SUMMARY_MAX } from "@/lib/schemas/quest";
-import type { MediaOption } from "@/server/content/media";
-import { createQuest, updateQuest } from "./actions";
+import { parseStack, slugify, STACK_MAX } from "@/lib/validation/fields";
+import { QUEST_SECTIONS, type QuestSection, SUMMARY_MAX } from "@/modules/quests/quests.schema";
+import type { MediaOption } from "@/modules/media";
+import { createQuestAction, updateQuestAction } from "@/modules/quests/quests.actions";
 import { KIND_LABELS, RARITY_LABELS } from "./labels";
 
 export type Values = {
@@ -74,6 +74,21 @@ function normalise(v: Values): Values {
   };
 }
 
+/** The form's values in the shape the quest schema expects (sections as Tiptap objects). */
+function toBody(v: Values) {
+  const { sections, ...rest } = normalise(v);
+  return {
+    ...rest,
+    diagramId: rest.diagramId || null,
+    ...Object.fromEntries(
+      QUEST_SECTIONS.map((s) => [
+        s.key,
+        sections[s.key] ? (JSON.parse(sections[s.key]) as RichDoc) : null,
+      ]),
+    ),
+  };
+}
+
 const card = "bg-vellum border-rule flex flex-col gap-4 rounded border px-4 py-5 sm:px-5";
 
 /** Create (no `id`) or edit (with `id`) a quest. Same pattern as the side quest form. */
@@ -106,8 +121,7 @@ export function QuestForm({
   } = useEditorForm<Values>({
     initial,
     normalise: normalise,
-    submit: (prev, formData) =>
-      id ? updateQuest(id, prev, formData) : createQuest(prev, formData),
+    submit: (v) => (id ? updateQuestAction(id, toBody(v)) : createQuestAction(toBody(v))),
     initialState: justCreated ? createdState() : undefined,
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(id));

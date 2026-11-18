@@ -3,7 +3,7 @@
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { useEditorForm } from "@/components/admin/use-editor-form";
 import { SaveBar } from "@/components/admin/save-bar";
-import { saveSettings } from "./actions";
+import { saveSettingsAction } from "@/modules/settings/settings.actions";
 
 type Values = { openToWork: boolean; roleType: string; githubUrl: string; linkedinUrl: string };
 
@@ -20,7 +20,7 @@ export function SettingsForm({ initial }: { initial: Values }) {
   const { values, set, dirty, state, formAction, pending, errors, revert } = useEditorForm<Values>({
     initial,
     normalise: trim,
-    submit: saveSettings,
+    submit: saveSettingsAction,
   });
 
   return (

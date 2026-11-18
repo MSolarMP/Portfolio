@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { SignOutButton } from "@/components/sign-out-button";
-import { requireAdmin } from "@/server/authz";
+import { requireAdmin } from "@/modules/auth";
 import { AdminNav, NavList } from "./admin-nav";
 import { AdminSkeleton } from "./admin-skeleton";
 

@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import type { QuestKind, Rarity, Status } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format";
 import { RARITY_LABELS } from "./labels";
-import { reorderQuests } from "./actions";
+import { reorderQuestsAction } from "@/modules/quests/quests.actions";
 
 type Row = {
   id: string;
@@ -93,7 +93,7 @@ export function QuestsTable({ initialRows }: { initialRows: Row[] }) {
       columns={columns}
       getId={(r) => r.id}
       getLabel={(r) => r.title}
-      onReorder={reorderQuests}
+      onReorder={reorderQuestsAction}
       empty={
         <>
           No quests yet. <Link href="/admin/quests/new">Write the first one</Link>.

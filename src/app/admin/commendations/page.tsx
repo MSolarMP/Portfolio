@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { listCommendations } from "@/server/content/commendations";
+import { listCommendations } from "@/modules/commendations";
 import { CommendationsTable } from "./commendations-table";
 
 export const metadata: Metadata = { title: "Commendations" };

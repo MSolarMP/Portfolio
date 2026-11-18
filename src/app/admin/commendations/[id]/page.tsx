@@ -5,15 +5,16 @@ import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { dateToDay } from "@/lib/schemas/commendation";
-import { getCommendation } from "@/server/content/commendations";
-import { deleteCommendation } from "../actions";
+import { dateToDay } from "@/modules/commendations/commendations.schema";
+import { getCommendation } from "@/modules/commendations";
+import { orNull } from "@/lib/errors";
+import { deleteCommendationAction } from "@/modules/commendations/commendations.actions";
 import { CommendationForm } from "../commendation-form";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/admin/commendations/[id]">): Promise<Metadata> {
-  const c = await getCommendation((await params).id);
+  const c = await orNull(getCommendation((await params).id));
   return { title: c ? `${c.name} · Commendations` : "Commendation not found" };
 }
 
@@ -35,7 +36,7 @@ export default function EditCommendation({
 
 async function Editor({ params, searchParams }: PageProps<"/admin/commendations/[id]">) {
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
-  const c = await getCommendation(id);
+  const c = await orNull(getCommendation(id));
   if (!c) notFound();
 
   return (
@@ -45,7 +46,7 @@ async function Editor({ params, searchParams }: PageProps<"/admin/commendations/
           {c.name} <StatusBadge status={c.status} />
         </h1>
         <DeleteButton
-          action={deleteCommendation.bind(null, c.id)}
+          action={deleteCommendationAction.bind(null, c.id)}
           title={`Delete ${c.name}'s commendation?`}
           description="It disappears from the site straight away. The original stays on LinkedIn."
           confirmLabel="Delete commendation"

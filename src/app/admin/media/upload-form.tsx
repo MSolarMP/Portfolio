@@ -5,13 +5,16 @@ import { Button } from "@/components/admin/button";
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { type ActionState, idle } from "@/lib/action-state";
 import { formatBytes } from "@/lib/format";
-import { IMAGE_TYPES } from "@/lib/schemas/media";
-import { uploadMedia } from "./actions";
+import { IMAGE_TYPES } from "@/modules/media/media.schema";
+import { uploadMediaAction } from "@/modules/media/media.actions";
 
 /** Pick an image (+ optional alt text) and upload. On success the action opens the new image. */
 export function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
-  const [state, formAction, pending] = useActionState<ActionState, FormData>(uploadMedia, idle);
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(
+    uploadMediaAction,
+    idle,
+  );
   const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
 
   return (

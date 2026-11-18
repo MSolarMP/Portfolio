@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { copyReader, initials } from "@/lib/copy";
-import { getPageCopy } from "@/server/content/content-blocks";
+import { getPageCopy } from "@/modules/content";
 import { PlainViewToggle } from "./plain-view-toggle";
 import { SiteNav, SiteNavList } from "./site-nav";
 

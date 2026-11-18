@@ -14,7 +14,7 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Styling         | Tailwind CSS · hand-built components (no UI library)                     |
 | Database        | PostgreSQL on Supabase · Prisma ORM                                      |
 | Auth            | Better Auth — owner-only magic-link sign-in                              |
-| Validation      | Zod — one schema per entity, shared by forms and server actions          |
+| Validation      | Zod — one schema per module, shared by forms, server actions and the API |
 | Rich text       | Tiptap, stored as allow-listed JSON                                      |
 | Media           | Supabase Storage (AVIF/WebP variants made with sharp, metadata stripped) |
 | Background jobs | None yet; a durable queue (Inngest) arrives with SMS alerts              |
@@ -39,11 +39,13 @@ A full stack portfolio built as a working product rather than a static page. Eve
 | Commendations | LinkedIn recommendations, each linking back to the original                                          |
 | Media vault   | Display images (profile photo, screenshots, diagrams): AVIF/WebP copies, metadata stripped, alt text |
 
-Every save follows the same path: check the owner's session → validate with Zod → write with Prisma → refresh only the affected cache tags. Lists can be sorted and reordered by drag or keyboard; rich text is cleaned against an allow-list on the server, so only known formatting and safe links are stored.
+Every save follows the same path: server action (check the owner's session → validate with Zod) → service (business rules) → repository (Prisma) → refresh only the affected cache tags. Lists can be sorted and reordered by drag or keyboard; rich text is cleaned against an allow-list on the server, so only known formatting and safe links are stored.
 
 ## How content is served
 
-Public pages read from the database inside `'use cache'` functions tagged with `cacheTag()`. Visitors get pre-rendered pages; saving in the admin calls `updateTag()` so only the affected pages refresh. See `src/lib/cache-tags.ts`.
+Public pages call module services directly; the reads run inside `'use cache'` functions tagged with `cacheTag()`, so visitors get pre-rendered pages. A save expires only the affected tags (`src/lib/cache.ts`, tag names in `src/lib/cache-tags.ts`).
+
+The same services back a read-only REST API for outside clients, e.g. `GET /api/v1/side-quests` (published content as JSON, CDN-cached; errors are RFC 9457 `application/problem+json` with a request id).
 
 ## Getting started
 
@@ -71,13 +73,38 @@ To sign in to the admin (`/admin`), set `BETTER_AUTH_SECRET` and put your email 
 
 ## Project structure
 
+A **modular monolith**: one deployable Next.js app, with the backend split into business modules.
+
 ```
-prisma/            schema, migrations, seed
-src/app/           routes — public site, /admin, API handlers
-src/components/    UI components (admin/ today, site/ with the public pages)
-src/server/        server-only code: database, auth, queries
-src/lib/           shared, framework-free code: Zod schemas, rich-text allow-list, cache tags
+prisma/                 schema, migrations, seed
+src/
+├── app/                routes only (thin): (site)/ public pages, admin/, sign-in/
+│   └── api/v1/         REST controllers for outside clients (read-only today)
+├── modules/            one folder per business area
+│   └── side-quests/
+│       ├── index.ts                 the module's public API
+│       ├── side-quests.actions.ts   controller for admin forms ('use server')
+│       ├── side-quests.service.ts   business rules
+│       ├── side-quests.repository.ts  Prisma queries only (data access layer)
+│       ├── side-quests.schema.ts    Zod contracts, shared with the browser
+│       └── *.test.ts
+│   (also: quests, chronicle, skills, commendations, content, settings, media, messages, auth)
+├── components/         presentation: site/ (public), admin/
+├── db/                 Prisma client (pooled) + Prisma error translation
+└── lib/                shared utilities: http/ (REST helpers), errors, cache, validation/, rich text
 ```
+
+Rules, enforced by ESLint (`no-restricted-imports`):
+
+- From outside a module, import only its `index.ts`, `*.actions` or `*.schema`. Services, repositories and helpers stay private.
+- Only repositories touch the Prisma client.
+- Modules talk to each other in-process through those public APIs (e.g. quests asks `@/modules/chronicle` whether a chapter exists).
+
+| Request            | Path                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| Page load (read)   | Browser → Server Component → module service → repository → Postgres                         |
+| Admin form (write) | Client Component → server action (auth, Zod) → service → repository → Postgres              |
+| External client    | HTTP → `app/api/v1/**/route.ts` (auth, Zod, status codes) → service → repository → Postgres |
 
 ## Architecture
 
@@ -95,19 +122,20 @@ One Next.js app. Public pages render from the database inside cached functions; 
 
 ### Key decisions
 
-| Decision                                                                    | Why                                                                                                                                                    |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| One app (modular monolith), not separate admin/API services                 | One developer, low traffic: one deploy and one auth system. Split when a second app exists.                                                            |
-| Supabase as plain Postgres, accessed only through Prisma                    | One typed data path. The public Data API is locked (RLS on, no policies, privileges revoked).                                                          |
-| Sign-in is for the owner only (Better Auth magic link; email allow-list)    | Visitors never need an account, so no personal data is collected. No passwords stored. Checked in the proxy, the admin layout and every server action. |
-| No UI component library; admin components written in plain React + Tailwind | Every component is understood and owned; native `<dialog>` and form elements cover accessibility.                                                      |
-| Rich text stored as Tiptap JSON and cleaned against an allow-list on save   | The public renderer only ever sees known nodes and safe links, so no raw HTML is ever injected.                                                        |
-| Database-driven content with tag-based caching                              | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                               |
-| Media in Supabase Storage: private originals, public resized copies         | Same project as the database and well within the free plan for a few display images; metadata (incl. GPS) stripped before anything is public.          |
-| No background-job service yet; a queue only once SMS needs retries          | No infrastructure before a workload needs it.                                                                                                          |
-| Migrations run during production builds only                                | Schema and code ship together; previews never change the live schema. Migrations stay additive.                                                        |
-| Functions pinned to `dub1`, next to the database                            | Saves ~75 ms on every database round trip.                                                                                                             |
-| One shared database while pre-launch                                        | No real data yet; revisit before launch.                                                                                                               |
+| Decision                                                                      | Why                                                                                                                                                                     |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| One app (modular monolith), not separate admin/API services                   | One developer, low traffic: one deploy and one auth system. Module boundaries mean a busy module can be extracted later without untangling it.                          |
+| Server actions for the site's own forms; REST (`/api/v1`) for outside clients | The standard Next.js split: no HTTP hop to ourselves, and a versioned, documented API where something external needs one. Both call the same services.                  |
+| Supabase as plain Postgres, accessed only through Prisma                      | One typed data path. The public Data API is locked (RLS on, no policies, privileges revoked).                                                                           |
+| Sign-in is for the owner only (Better Auth magic link; email allow-list)      | Visitors never need an account, so no personal data is collected. No passwords stored. Checked in the proxy, the admin layout, every server action and every API route. |
+| No UI component library; admin components written in plain React + Tailwind   | Every component is understood and owned; native `<dialog>` and form elements cover accessibility.                                                                       |
+| Rich text stored as Tiptap JSON and cleaned against an allow-list on save     | The public renderer only ever sees known nodes and safe links, so no raw HTML is ever injected.                                                                         |
+| Database-driven content with tag-based caching                                | Edit without redeploying, yet pages load like a static site and survive a slow database.                                                                                |
+| Media in Supabase Storage: private originals, public resized copies           | Same project as the database and well within the free plan for a few display images; metadata (incl. GPS) stripped before anything is public.                           |
+| No background-job service yet; a queue only once SMS needs retries            | No infrastructure before a workload needs it.                                                                                                                           |
+| Migrations run during production builds only                                  | Schema and code ship together; previews never change the live schema. Migrations stay additive.                                                                         |
+| Functions pinned to `dub1`, next to the database                              | Saves ~75 ms on every database round trip.                                                                                                                              |
+| One shared database while pre-launch                                          | No real data yet; revisit before launch.                                                                                                                                |
 
 ## Licence
 

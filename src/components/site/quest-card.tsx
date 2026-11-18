@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Rarity } from "@/generated/prisma/client";
-import type { PublicImage } from "@/server/content/media";
+import type { PublicImage } from "@/modules/media";
 import { SiteImage } from "./site-image";
 
 const rarity: Record<Rarity, { seal: string; label: string; className: string }> = {

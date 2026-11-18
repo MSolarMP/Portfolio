@@ -14,7 +14,8 @@ export function createdState(message = "Created."): ActionState {
  * - `values`: what's in the fields now; `saved`: what's in the database.
  * - `dirty`: they differ (compared after `normalise`, which mirrors what the server
  *   stores — trimming, cleaning rich text — so whitespace alone isn't "unsaved").
- * - `formAction` / `pending` / `state`: for `<form action>`; on success, `saved`
+ * - `formAction` / `pending` / `state`: for `<form action>`. Submitting calls `submit`
+ *   with the current values (the module's server action); on success, `saved`
  *   becomes the normalised values.
  * - `errors`: field errors from the last save, keyed by field name.
  * - `revert()`: back to `saved`. It also bumps `revision`; use it as part of the `key`
@@ -30,26 +31,25 @@ export function useEditorForm<V>({
 }: {
   initial: V;
   normalise?: (values: V) => V;
-  submit: (prev: ActionState, formData: FormData) => Promise<ActionState>;
+  /** Saves the values, usually by calling the module's server action. */
+  submit: (values: V) => Promise<ActionState>;
   initialState?: ActionState;
 }) {
   const [saved, setSaved] = useState(initial);
   const [values, setValues] = useState(initial);
   const [revision, setRevision] = useState(0);
   const dirty = JSON.stringify(normalise(values)) !== JSON.stringify(normalise(saved));
-
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = await submit(prev, formData);
-      if (result.status === "success") {
-        const stored = normalise(values);
-        setSaved(stored);
-        setValues(stored);
-      }
-      return result;
-    },
-    initialState,
-  );
+  // useActionState always runs the latest committed function, so `values` is current.
+  const [state, formAction, pending] = useActionState(async () => {
+    const submitted = values;
+    const result = await submit(submitted);
+    if (result.status === "success") {
+      const stored = normalise(submitted);
+      setSaved(stored);
+      setValues(stored);
+    }
+    return result;
+  }, initialState);
 
   const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { listInterests } from "@/server/content/interests";
+import { listSideQuests } from "@/modules/side-quests";
 import { SideQuestsTable } from "./side-quests-table";
 
 export const metadata: Metadata = { title: "Side quests" };
@@ -25,7 +25,7 @@ export default function SideQuestsAdmin() {
 }
 
 async function SideQuestsList() {
-  const rows = await listInterests();
+  const rows = await listSideQuests();
   return (
     <SideQuestsTable
       // Remount only when rows are added or removed. A reorder re-renders this page too,

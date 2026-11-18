@@ -5,16 +5,18 @@ import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { QUEST_SECTIONS } from "@/lib/schemas/quest";
-import { listMediaOptions } from "@/server/content/media";
-import { getQuest, listChapterOptions } from "@/server/content/quests";
-import { deleteQuest } from "../actions";
+import { QUEST_SECTIONS } from "@/modules/quests/quests.schema";
+import { listMediaOptions } from "@/modules/media";
+import { orNull } from "@/lib/errors";
+import { listChapterOptions } from "@/modules/chronicle";
+import { getQuest } from "@/modules/quests";
+import { deleteQuestAction } from "@/modules/quests/quests.actions";
 import { QuestForm, type Values } from "../quest-form";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/admin/quests/[id]">): Promise<Metadata> {
-  const quest = await getQuest((await params).id);
+  const quest = await orNull(getQuest((await params).id));
   return { title: quest ? `${quest.title} · Quests` : "Quest not found" };
 }
 
@@ -34,7 +36,7 @@ export default function EditQuest({ params, searchParams }: PageProps<"/admin/qu
 async function Editor({ params, searchParams }: PageProps<"/admin/quests/[id]">) {
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
   const [quest, chapters, media] = await Promise.all([
-    getQuest(id),
+    orNull(getQuest(id)),
     listChapterOptions(),
     listMediaOptions(),
   ]);
@@ -67,7 +69,7 @@ async function Editor({ params, searchParams }: PageProps<"/admin/quests/[id]">)
           {quest.title} <StatusBadge status={quest.status} />
         </h1>
         <DeleteButton
-          action={deleteQuest.bind(null, quest.id)}
+          action={deleteQuestAction.bind(null, quest.id)}
           title={`Delete “${quest.title}”?`}
           description="The case study disappears from the site straight away and can't be recovered. Its diagram stays in the Media vault."
           confirmLabel="Delete quest"

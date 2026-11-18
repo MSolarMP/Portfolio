@@ -5,7 +5,8 @@ import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { formatDateTime } from "@/lib/format";
 import { replyHref } from "@/lib/reply";
-import { getMessage } from "@/server/content/messages";
+import { orNull } from "@/lib/errors";
+import { getMessage } from "@/modules/messages";
 import { MessageActions } from "../message-actions";
 
 export const metadata: Metadata = { title: "Raven" };
@@ -24,7 +25,7 @@ export default function MessagePage({ params }: PageProps<"/admin/messages/[id]"
 }
 
 async function Message({ params }: Pick<PageProps<"/admin/messages/[id]">, "params">) {
-  const m = await getMessage((await params).id);
+  const m = await orNull(getMessage((await params).id));
   if (!m) notFound();
 
   return (

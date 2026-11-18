@@ -1,6 +1,6 @@
 import { toNextJsHandler } from "better-auth/next-js";
-import { auth } from "@/server/auth";
-import { limitMagicLink } from "@/server/ratelimit";
+import { auth } from "@/modules/auth";
+import { limitMagicLink } from "@/lib/ratelimit";
 
 const handler = toNextJsHandler(auth);
 

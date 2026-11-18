@@ -5,7 +5,7 @@ import { Button } from "@/components/admin/button";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { type ActionState, idle } from "@/lib/action-state";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
-import { updateContentBlockRich } from "./actions";
+import { updateContentRichAction } from "@/modules/content/content.actions";
 
 type Block = { key: string; label: string; rich: RichDoc | null };
 
@@ -19,8 +19,10 @@ export function RichBlockForm({ block }: { block: Block }) {
   const dirty = richTextKey(value) !== richTextKey(saved);
 
   const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = await updateContentBlockRich(prev, formData);
+    async (_prev: ActionState, formData: FormData) => {
+      const raw = String(formData.get("rich") ?? "");
+      const rich: unknown = raw ? JSON.parse(raw) : null;
+      const result = await updateContentRichAction(block.key, { rich });
       if (result.status === "success") setSaved(String(formData.get("rich")));
       return result;
     },
@@ -34,7 +36,6 @@ export function RichBlockForm({ block }: { block: Block }) {
       action={formAction}
       className="bg-vellum border-rule flex flex-col gap-3 rounded border px-4 py-4 sm:px-5"
     >
-      <input type="hidden" name="key" value={block.key} />
       <RichTextEditor
         key={revision}
         name="rich"

@@ -5,9 +5,9 @@ import { Button } from "@/components/admin/button";
 import { createdState, useEditorForm } from "@/components/admin/use-editor-form";
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { SaveBar } from "@/components/admin/save-bar";
-import { BULLETS_MAX, CHAPTER_SUMMARY_MAX } from "@/lib/schemas/chapter";
-import { parseStack, STACK_MAX } from "@/lib/schemas/fields";
-import { createChapter, updateChapter } from "./actions";
+import { BULLETS_MAX, CHAPTER_SUMMARY_MAX } from "@/modules/chronicle/chronicle.schema";
+import { parseStack, STACK_MAX } from "@/lib/validation/fields";
+import { createChapterAction, updateChapterAction } from "@/modules/chronicle/chronicle.actions";
 
 export type Values = {
   numeral: string;
@@ -63,8 +63,10 @@ export function ChapterForm({
   const { values, set, dirty, state, formAction, pending, errors, revert } = useEditorForm<Values>({
     initial,
     normalise: normalise,
-    submit: (prev, formData) =>
-      id ? updateChapter(id, prev, formData) : createChapter(prev, formData),
+    submit: (v) => {
+      const body = normalise(v);
+      return id ? updateChapterAction(id, body) : createChapterAction(body);
+    },
     initialState: justCreated ? createdState() : undefined,
   });
 

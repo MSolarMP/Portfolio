@@ -2,7 +2,8 @@
  * Every admin server action must check the Keeper's session before doing anything.
  *
  * Server actions are public HTTP endpoints: anyone can call one directly, skipping the
- * admin layout. This test finds every `actions.ts` under /admin, makes `requireAdmin()`
+ * admin layout. This test finds every server-action file (`src/modules/<area>/<area>.actions.ts`, plus
+ * any `actions.ts` left under /admin), makes `requireAdmin()`
  * refuse (as it does for a stranger), calls every exported action, and checks that each
  * one stops right there: no database query, storage call, rate-limit check, cache refresh or redirect.
  * A new action that forgets `requireAdmin()` fails this test.
@@ -29,12 +30,12 @@ const dbProxy = new Proxy(
 
 class Refused extends Error {}
 
-vi.mock("@/server/authz", () => ({
+vi.mock("@/modules/auth", () => ({
   requireAdmin: vi.fn(async () => {
     throw new Refused("not the Keeper");
   }),
 }));
-vi.mock("@/server/db", () => ({ db: dbProxy, jsonOrNull: record("jsonOrNull") }));
+vi.mock("@/db", () => ({ db: dbProxy, jsonOrNull: record("jsonOrNull") }));
 vi.mock("@/server/media/storage", () => ({
   buckets: { originals: "originals", public: "media" },
   putObject: record("storage.putObject"),
@@ -42,7 +43,7 @@ vi.mock("@/server/media/storage", () => ({
   publicUrl: record("storage.publicUrl"),
 }));
 vi.mock("@/server/media/process", () => ({ processImage: record("processImage") }));
-vi.mock("@/server/ratelimit", () => ({
+vi.mock("@/lib/ratelimit", () => ({
   limits: {},
   allow: record("ratelimit.allow"),
   retryMessage: () => "",
@@ -51,11 +52,19 @@ vi.mock("next/cache", () => ({
   updateTag: record("updateTag"),
   revalidateTag: record("revalidateTag"),
   refresh: record("refresh"),
+  cacheLife: () => {},
+  cacheTag: () => {},
 }));
 vi.mock("next/navigation", () => ({ redirect: record("redirect") }));
 
-// Every actions.ts under src/app/admin, found at test time.
-const modules = import.meta.glob<Record<string, unknown>>("/src/app/admin/**/actions.ts");
+/** Actions anyone may call on purpose. Listing one here is a deliberate, reviewed decision. */
+const PUBLIC_ACTIONS = new Set(["auth/auth.actions.ts → signOut"]);
+
+// Every server-action file, found at test time.
+const modules = import.meta.glob<Record<string, unknown>>([
+  "/src/modules/*/*.actions.ts",
+  "/src/app/admin/**/actions.ts",
+]);
 
 beforeEach(() => {
   touched.length = 0;
@@ -68,7 +77,7 @@ describe("admin server actions", () => {
   });
 
   for (const [path, load] of Object.entries(modules)) {
-    const name = path.replace("/src/app/admin/", "");
+    const name = path.replace(/^\/src\/(app\/admin|modules)\//, "");
 
     it(`${name}: every action refuses a non-Keeper before touching anything`, async () => {
       const mod = await load();
@@ -76,8 +85,10 @@ describe("admin server actions", () => {
       expect(actions.length, `${name} exports no actions`).toBeGreaterThan(0);
 
       for (const [exportName, action] of actions) {
+        if (PUBLIC_ACTIONS.has(`${name} → ${exportName}`)) continue;
         touched.length = 0;
-        // Plausible arguments for any signature: (id, prevState, formData) or (prevState, formData) or (ids).
+        // Plausible arguments for any signature: (id, input), (input), (ids) or the old
+        // (id, prevState, formData) / (prevState, formData).
         const args = ["some-id", { status: "idle" }, new FormData()];
         await expect(
           (action as (...a: unknown[]) => Promise<unknown>)(...args),

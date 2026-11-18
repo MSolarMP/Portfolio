@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
-import type { MediaOption } from "@/server/content/media";
+import type { MediaOption } from "@/modules/media";
 import { Button } from "./button";
 
 /**

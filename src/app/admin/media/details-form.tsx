@@ -3,7 +3,7 @@
 import { FormField, fieldClass } from "@/components/admin/form-field";
 import { createdState, useEditorForm } from "@/components/admin/use-editor-form";
 import { SaveBar } from "@/components/admin/save-bar";
-import { updateMedia } from "./actions";
+import { updateMediaAction } from "@/modules/media/media.actions";
 
 type Values = { alt: string; caption: string };
 
@@ -25,7 +25,7 @@ export function DetailsForm({
   const { values, set, dirty, state, formAction, pending, errors, revert } = useEditorForm<Values>({
     initial,
     normalise: trim,
-    submit: (prev, formData) => updateMedia(id, prev, formData),
+    submit: (v) => updateMediaAction(id, v),
     initialState: justCreated ? createdState("Uploaded.") : undefined,
   });
 

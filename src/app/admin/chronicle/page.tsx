@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { dateToMonth } from "@/lib/schemas/chapter";
-import { listChapters } from "@/server/content/chapters";
+import { dateToMonth } from "@/modules/chronicle/chronicle.schema";
+import { listChapters } from "@/modules/chronicle";
 import { ChronicleTable } from "./chronicle-table";
 
 export const metadata: Metadata = { title: "Chronicle" };

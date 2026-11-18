@@ -5,7 +5,7 @@ import { type Column, DataTable } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { Status } from "@/generated/prisma/enums";
 import { formatDate } from "@/lib/format";
-import { reorderInterests } from "./actions";
+import { reorderSideQuestsAction } from "@/modules/side-quests/side-quests.actions";
 
 type Row = {
   id: string;
@@ -77,7 +77,7 @@ export function SideQuestsTable({ initialRows }: { initialRows: Row[] }) {
       columns={columns}
       getId={(r) => r.id}
       getLabel={(r) => r.title}
-      onReorder={reorderInterests}
+      onReorder={reorderSideQuestsAction}
       empty={
         <>
           No side quests yet. <Link href="/admin/side-quests/new">Add the first one</Link>.

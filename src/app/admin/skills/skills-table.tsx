@@ -5,9 +5,13 @@ import { Button } from "@/components/admin/button";
 import { type Column, DataTable } from "@/components/admin/data-table";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { fieldClass } from "@/components/admin/form-field";
-import { type ActionState, idle } from "@/lib/action-state";
-import { SKILL_CATEGORIES, type SkillCategory } from "@/lib/schemas/skill";
-import { deleteSkill, reorderSkills, updateSkill } from "./actions";
+import { idle } from "@/lib/action-state";
+import { SKILL_CATEGORIES, type SkillCategory } from "@/modules/skills/skills.schema";
+import {
+  deleteSkillAction,
+  reorderSkillsAction,
+  updateSkillAction,
+} from "@/modules/skills/skills.actions";
 
 export type Row = { id: string; name: string; category: SkillCategory; headline: boolean };
 
@@ -19,7 +23,7 @@ const columns: Column<Row>[] = [
     className: "w-0",
     cell: (r) => (
       <DeleteButton
-        action={deleteSkill.bind(null, r.id)}
+        action={deleteSkillAction.bind(null, r.id)}
         ariaLabel={`Delete ${r.name}`}
         title={`Delete “${r.name}”?`}
         description="It disappears from the skill tree straight away."
@@ -39,7 +43,7 @@ export function SkillsTable({ category, rows }: { category: SkillCategory; rows:
       columns={columns}
       getId={(r) => r.id}
       getLabel={(r) => r.name}
-      onReorder={reorderSkills.bind(null, category)}
+      onReorder={reorderSkillsAction.bind(null, category)}
       empty={<span className="text-ink-faded">No {label.toLowerCase()} skills yet.</span>}
     />
   );
@@ -54,18 +58,16 @@ function SkillRow({ skill }: { skill: Row }) {
     value.category !== saved.category ||
     value.headline !== saved.headline;
 
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = await updateSkill(skill.id, prev, formData);
-      if (result.status === "success") {
-        const stored = { ...value, name: value.name.trim() };
-        setSaved(stored);
-        setValue(stored);
-      }
-      return result;
-    },
-    idle,
-  );
+  const [state, formAction, pending] = useActionState(async () => {
+    const { name, category, headline } = value;
+    const result = await updateSkillAction(skill.id, { name, category, headline });
+    if (result.status === "success") {
+      const stored = { ...value, name: value.name.trim() };
+      setSaved(stored);
+      setValue(stored);
+    }
+    return result;
+  }, idle);
 
   const error = state.status === "error" ? (state.fieldErrors?.name ?? state.message) : undefined;
 

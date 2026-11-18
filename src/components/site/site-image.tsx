@@ -1,4 +1,4 @@
-import type { PublicImage } from "@/server/content/media";
+import type { PublicImage } from "@/modules/media";
 
 /**
  * A pre-resized image (AVIF/WebP variants from the media pipeline) as a plain <picture>.

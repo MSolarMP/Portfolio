@@ -3,9 +3,9 @@
 import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/admin/button";
 import { FormField, fieldClass } from "@/components/admin/form-field";
-import { type ActionState, idle } from "@/lib/action-state";
-import { SKILL_CATEGORIES, type SkillCategory } from "@/lib/schemas/skill";
-import { createSkill } from "./actions";
+import { idle } from "@/lib/action-state";
+import { SKILL_CATEGORIES, type SkillCategory } from "@/modules/skills/skills.schema";
+import { createSkillAction } from "@/modules/skills/skills.actions";
 
 /** Quick add: after each add the name clears and keeps focus, so you can type the next one. */
 export function AddSkillForm() {
@@ -14,18 +14,15 @@ export function AddSkillForm() {
   const [headline, setHeadline] = useState(false);
   const nameInput = useRef<HTMLInputElement>(null);
 
-  const [state, formAction, pending] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = await createSkill(prev, formData);
-      if (result.status === "success") {
-        setName("");
-        setHeadline(false);
-        nameInput.current?.focus();
-      }
-      return result;
-    },
-    idle,
-  );
+  const [state, formAction, pending] = useActionState(async () => {
+    const result = await createSkillAction({ name, category, headline });
+    if (result.status === "success") {
+      setName("");
+      setHeadline(false);
+      nameInput.current?.focus();
+    }
+    return result;
+  }, idle);
 
   const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
 

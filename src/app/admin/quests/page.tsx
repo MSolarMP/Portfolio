@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { listQuests } from "@/server/content/quests";
+import { listQuests } from "@/modules/quests";
 import { QuestsTable } from "./quests-table";
 
 export const metadata: Metadata = { title: "Quests" };

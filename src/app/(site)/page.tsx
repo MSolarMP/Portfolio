@@ -4,12 +4,12 @@ import { QuestCard } from "@/components/site/quest-card";
 import { SectionHeading } from "@/components/site/section-heading";
 import { copyReader, initials } from "@/lib/copy";
 import { formatMonthRange } from "@/lib/format";
-import { SKILL_CATEGORIES } from "@/lib/schemas/skill";
-import { getChronicle, getExperience } from "@/server/content/chapters";
-import { getPageCopy } from "@/server/content/content-blocks";
-import { getFeaturedQuests } from "@/server/content/quests";
-import { getPublicSettings } from "@/server/content/settings";
-import { getSkills } from "@/server/content/skills";
+import { SKILL_CATEGORIES } from "@/modules/skills/skills.schema";
+import { getChronicle, getExperience } from "@/modules/chronicle";
+import { getPageCopy } from "@/modules/content";
+import { getFeaturedQuests } from "@/modules/quests";
+import { getPublicSettings } from "@/modules/settings";
+import { getSkills } from "@/modules/skills";
 
 type Copy = ReturnType<typeof copyReader>;
 

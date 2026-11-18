@@ -6,14 +6,15 @@ import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { formatBytes, formatDate } from "@/lib/format";
-import { getMedia } from "@/server/content/media";
-import { deleteMedia } from "../actions";
+import { orNull } from "@/lib/errors";
+import { getMedia } from "@/modules/media";
+import { deleteMediaAction } from "@/modules/media/media.actions";
 import { DetailsForm } from "../details-form";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/admin/media/[id]">): Promise<Metadata> {
-  const m = await getMedia((await params).id);
+  const m = await orNull(getMedia((await params).id));
   return { title: m ? `${m.filename} · Media vault` : "Image not found" };
 }
 
@@ -32,7 +33,7 @@ export default function MediaItem({ params, searchParams }: PageProps<"/admin/me
 
 async function Item({ params, searchParams }: PageProps<"/admin/media/[id]">) {
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
-  const m = await getMedia(id);
+  const m = await orNull(getMedia(id));
   if (!m) notFound();
 
   const usedBy = [
@@ -51,7 +52,7 @@ async function Item({ params, searchParams }: PageProps<"/admin/media/[id]">) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-display min-w-0 text-2xl font-bold break-all">{m.filename}</h1>
         <DeleteButton
-          action={deleteMedia.bind(null, m.id)}
+          action={deleteMediaAction.bind(null, m.id)}
           title={`Delete “${m.filename}”?`}
           description={
             usedBy.length

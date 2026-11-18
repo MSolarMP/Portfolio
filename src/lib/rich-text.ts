@@ -129,6 +129,30 @@ export function cleanRichDoc(input: unknown): RichDoc | null {
 }
 
 /**
+ * Zod field for rich text in a JSON request body: a Tiptap document object, or null.
+ * Cleaned against the allow-list and size-checked; an empty document becomes null.
+ */
+export const richDocField = z
+  .unknown()
+  .optional()
+  .transform((value, ctx) => {
+    if (value === null || value === undefined) return null;
+    if (JSON.stringify(value).length > RICH_TEXT_MAX_BYTES) {
+      ctx.addIssue({ code: "custom", message: "This section is too long." });
+      return z.NEVER;
+    }
+    try {
+      return cleanRichDoc(value);
+    } catch (err) {
+      ctx.addIssue({
+        code: "custom",
+        message: err instanceof RichTextError ? err.message : "That text couldn't be read.",
+      });
+      return z.NEVER;
+    }
+  });
+
+/**
  * Zod field for a rich-text form value: the editor posts its JSON as a string.
  * Parses, cleans and size-checks it; an empty document becomes null.
  */

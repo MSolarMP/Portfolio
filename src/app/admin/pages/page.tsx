@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { ContentSkeleton } from "@/components/admin/content-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { readRichDoc } from "@/lib/rich-text";
-import { listContentBlocks } from "@/server/content/content-blocks";
+import { listContentBlocks } from "@/modules/content";
 import { BlockForm } from "./block-form";
 import { RichBlockForm } from "./rich-block-form";
 
