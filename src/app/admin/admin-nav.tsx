@@ -13,7 +13,7 @@ const groups: { title: string; items: Item[] }[] = [
       { label: "Pages & copy", href: "/admin/pages", ready: true },
       { label: "Side quests", href: "/admin/side-quests", ready: true },
       { label: "Quests (case studies)", href: "/admin/quests", ready: true },
-      { label: "Chronicle", href: "/admin/chronicle", ready: false },
+      { label: "Chronicle", href: "/admin/chronicle", ready: true },
       { label: "Skills", href: "/admin/skills", ready: false },
       { label: "Commendations", href: "/admin/commendations", ready: false },
       { label: "Media vault", href: "/admin/media", ready: false },

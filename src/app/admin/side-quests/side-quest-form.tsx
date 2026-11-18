@@ -9,7 +9,8 @@ import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { Status } from "@/generated/prisma/enums";
 import { type ActionState, idle } from "@/lib/action-state";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
-import { slugify, type Stat, STATS_MAX, TAGLINE_MAX } from "@/lib/schemas/interest";
+import { slugify } from "@/lib/schemas/fields";
+import { type Stat, STATS_MAX, TAGLINE_MAX } from "@/lib/schemas/interest";
 import { createInterest, updateInterest } from "./actions";
 
 export type Values = {

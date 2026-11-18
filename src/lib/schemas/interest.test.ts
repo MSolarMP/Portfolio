@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { interestFormValues, interestSchema, slugify, STATS_MAX } from "./interest";
+import { slugify } from "./fields";
+import { interestFormValues, interestSchema, STATS_MAX } from "./interest";
 
 function form(entries: [string, string][]) {
   const fd = new FormData();

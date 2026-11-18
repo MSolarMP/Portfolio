@@ -8,14 +8,8 @@ import { VisibilityFields } from "@/components/admin/visibility-fields";
 import type { QuestKind, Rarity, Status } from "@/generated/prisma/enums";
 import { type ActionState, idle } from "@/lib/action-state";
 import { type RichDoc, richTextKey } from "@/lib/rich-text";
-import { slugify } from "@/lib/schemas/interest";
-import {
-  parseStack,
-  QUEST_SECTIONS,
-  type QuestSection,
-  STACK_MAX,
-  SUMMARY_MAX,
-} from "@/lib/schemas/quest";
+import { parseStack, slugify, STACK_MAX } from "@/lib/schemas/fields";
+import { QUEST_SECTIONS, type QuestSection, SUMMARY_MAX } from "@/lib/schemas/quest";
 import { createQuest, updateQuest } from "./actions";
 import { KIND_LABELS, RARITY_LABELS } from "./labels";
 

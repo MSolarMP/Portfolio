@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseStack, questFormValues, questSchema, STACK_MAX } from "./quest";
+import { parseStack, STACK_MAX } from "./fields";
+import { questFormValues, questSchema } from "./quest";
 
 const base: Record<string, string> = {
   title: " The Great Migration ",
